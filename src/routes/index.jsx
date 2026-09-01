@@ -60,13 +60,3 @@ export function DashboardsPage() {
     </RequireAuth>
   )
 }
-
-export function SettingsPage() {
-  return (
-    <RequireAuth>
-      <RequireRole roles={['super_admin','admin']}>
-        <AppLayout><ComingSoon title="Configurações" /></AppLayout>
-      </RequireRole>
-    </RequireAuth>
-  )
-}

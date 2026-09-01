@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useUpdateClient, useUpdateProject, useContacts } from '@/hooks/useClients'
 import { useProfilesCS } from '@/hooks/useProfiles'
 import { useDebounce } from '@/hooks/useDebounce'
+import { useConfigOptionsActive } from '@/hooks/useConfigOptions'
 import FormField from '@/components/form/FormField'
 import CEPInput from '@/components/form/CEPInput'
 import CNPJInput from '@/components/form/CNPJInput'
@@ -11,18 +12,6 @@ import SearchSelect from '@/components/form/SearchSelect'
 import AutosaveIndicator from '../components/AutosaveIndicator'
 import ContactsTable from '../components/ContactsTable'
 
-const SISTEMAS = [
-  { value: 'adsim', label: 'Adsim' },
-  { value: 'midiaplus', label: 'Mídia+' },
-  { value: 'adanalytics', label: 'Ad Analytics' },
-  { value: 'adchecking', label: 'Adchecking' },
-]
-const SEGMENTOS = [
-  { value: 'tv', label: 'TV' }, { value: 'radio', label: 'Rádio' },
-  { value: 'digital', label: 'Digital' }, { value: 'portal', label: 'Portal' },
-  { value: 'ooh', label: 'OOH' }, { value: 'jornal', label: 'Jornal' },
-  { value: 'revista', label: 'Revista' }, { value: 'agencia', label: 'Agência' },
-]
 const STATUS_OPTS = [
   { value: 'prospecto', label: 'Prospecto' }, { value: 'implantacao', label: 'Implantação' },
   { value: 'ativo', label: 'Ativo' }, { value: 'pausado', label: 'Pausado' },
@@ -50,6 +39,8 @@ export default function ProjectTab({ client, project }) {
   const debouncedClient  = useDebounce(clientForm,  800)
   const debouncedProject = useDebounce(projectForm, 800)
 
+  const { data: sistemas = [] } = useConfigOptionsActive('sistema')
+  const { data: segmentos = [] } = useConfigOptionsActive('segmento')
   const updateClient  = useUpdateClient()
   const updateProject = useUpdateProject()
   const { data: contacts = [] } = useContacts(project?.id)
@@ -108,7 +99,7 @@ export default function ProjectTab({ client, project }) {
           </FormField>
           <FormField label="Segmento">
             <MultiSelect
-              options={SEGMENTOS}
+              options={segmentos}
               value={Array.isArray(clientForm.segmento) ? clientForm.segmento : []}
               onChange={sc('segmento')}
               placeholder="Selecionar segmentos…"
@@ -133,7 +124,7 @@ export default function ProjectTab({ client, project }) {
       {/* Sistemas contratados */}
       <Section title="Sistemas Contratados">
         <MultiSelect
-          options={SISTEMAS}
+          options={sistemas}
           value={Array.isArray(projectForm.sistemas_contratados) ? projectForm.sistemas_contratados : []}
           onChange={sp('sistemas_contratados')}
           placeholder="Selecionar sistemas…"

@@ -4,11 +4,13 @@ import ForgotPassword  from '@/features/auth/ForgotPassword'
 import ResetPassword   from '@/features/auth/ResetPassword'
 import ClientsListPage from '@/features/clients/ClientsListPage'
 import ClientPage      from '@/features/clients/ClientPage'
+import SettingsPage    from '@/features/settings/SettingsPage'
 import {
+  RequireAuth,
+  RequireRole,
   RoleHome,
   AnalyticsPage,
   DashboardsPage,
-  SettingsPage,
 } from '@/routes/index'
 
 export default function App() {
@@ -24,13 +26,21 @@ export default function App() {
         <Route path="/" element={<RoleHome />} />
 
         {/* Clientes */}
-        <Route path="/clients"     element={<ClientsListPage />} />
-        <Route path="/clients/:id" element={<ClientPage />} />
+        <Route path="/clients"     element={<RequireAuth><ClientsListPage /></RequireAuth>} />
+        <Route path="/clients/:id" element={<RequireAuth><ClientPage /></RequireAuth>} />
+
+        {/* Configurações */}
+        <Route path="/settings" element={
+          <RequireAuth>
+            <RequireRole roles={['super_admin','admin']}>
+              <SettingsPage />
+            </RequireRole>
+          </RequireAuth>
+        } />
 
         {/* Demais protegidas */}
         <Route path="/analytics"   element={<AnalyticsPage />} />
         <Route path="/dashboards"  element={<DashboardsPage />} />
-        <Route path="/settings"    element={<SettingsPage />} />
 
         {/* 404 */}
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -9,19 +9,11 @@ import CEPInput from '@/components/form/CEPInput'
 import MultiSelect from '@/components/form/MultiSelect'
 import SearchSelect from '@/components/form/SearchSelect'
 import { useCreateClient } from '@/hooks/useClients'
+import { useConfigOptionsActive } from '@/hooks/useConfigOptions'
 import { useProfilesCS } from '@/hooks/useProfiles'
 import { useToast } from '@/components/shared/ToastContext'
 import Spinner from '@/components/ui/Spinner'
 
-const SISTEMAS = [
-  { value: 'adsim', label: 'Adsim' }, { value: 'midiaplus', label: 'Mídia+' },
-  { value: 'adanalytics', label: 'Ad Analytics' }, { value: 'adchecking', label: 'Adchecking' },
-]
-const SEGMENTOS = [
-  { value: 'tv', label: 'TV' }, { value: 'radio', label: 'Rádio' }, { value: 'digital', label: 'Digital' },
-  { value: 'portal', label: 'Portal' }, { value: 'ooh', label: 'OOH' }, { value: 'jornal', label: 'Jornal' },
-  { value: 'revista', label: 'Revista' }, { value: 'agencia', label: 'Agência' },
-]
 
 const schema = z.object({
   razao_social: z.string().min(2, 'Obrigatório'),
@@ -36,6 +28,8 @@ const schema = z.object({
 })
 
 export default function NewClientModal({ open, onClose, onCreated }) {
+  const { data: sistemas = [] } = useConfigOptionsActive('sistema')
+  const { data: segmentos = [] } = useConfigOptionsActive('segmento')
   const { data: profiles = [] } = useProfilesCS()
   const create = useCreateClient()
   const { toast } = useToast()
@@ -100,11 +94,11 @@ export default function NewClientModal({ open, onClose, onCreated }) {
           </FormField>
           <FormField label="Segmento" error={errors.segmento?.message} className="col-span-2">
             <Controller name="segmento" control={control}
-              render={({ field }) => <MultiSelect options={SEGMENTOS} value={field.value ?? []} onChange={field.onChange} placeholder="Selecionar segmentos…" />} />
+              render={({ field }) => <MultiSelect options={segmentos} value={field.value ?? []} onChange={field.onChange} placeholder="Selecionar segmentos…" />} />
           </FormField>
           <FormField label="Sistemas Contratados" required error={errors.sistemas_contratados?.message} className="col-span-2">
             <Controller name="sistemas_contratados" control={control}
-              render={({ field }) => <MultiSelect options={SISTEMAS} value={field.value ?? []} onChange={field.onChange} placeholder="Selecionar sistemas…" />} />
+              render={({ field }) => <MultiSelect options={sistemas} value={field.value ?? []} onChange={field.onChange} placeholder="Selecionar sistemas…" />} />
           </FormField>
           <FormField label="Analista CS Responsável" required error={errors.responsavel_cs_id?.message} className="col-span-2">
             <Controller name="responsavel_cs_id" control={control}
