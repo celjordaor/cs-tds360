@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useUsers, useCreateUser, useUpdateUser } from '@/hooks/useUsers'
-import { Spinner } from '@/components/ui/Spinner'
-import { Badge } from '@/components/ui/Badge'
-import { Toggle } from '@/components/ui/Toggle'
-import { Modal } from '@/components/ui/Modal'
+import Spinner from '@/components/ui/Spinner'
+import Badge from '@/components/ui/Badge'
+import Toggle from '@/components/ui/Toggle'
+import Modal from '@/components/ui/Modal'
 import FormField from '@/components/form/FormField'
 import { UserPlus, Mail } from 'lucide-react'
 
