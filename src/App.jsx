@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import LoginPage from '@/features/auth/LoginPage'
 import ForgotPassword from '@/features/auth/ForgotPassword'
+import ResetPassword from '@/features/auth/ResetPassword'
 import {
   RoleHome,
   AnalyticsPage,
@@ -16,6 +17,7 @@ export default function App() {
         {/* Públicas */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Raiz — redireciona para home do perfil */}
         <Route path="/" element={<RoleHome />} />

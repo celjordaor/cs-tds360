@@ -37,7 +37,7 @@ export default function LoginPage() {
       })
       return
     }
-    // Redirecionamento feito pelo useAuth + router em App.jsx
+    navigate('/')
   }
 
   return (
