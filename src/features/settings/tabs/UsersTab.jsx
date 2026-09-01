@@ -120,7 +120,7 @@ export default function UsersTab() {
       )}
 
       <Modal
-        isOpen={showModal}
+        open={showModal}
         onClose={handleClose}
         title="Convidar usuário"
         footer={

@@ -42,8 +42,13 @@ export default function NewClientModal({ open, onClose, onCreated }) {
   async function onSubmit(values) {
     try {
       const { segmento, sistemas_contratados, responsavel_cs_id, ...clientData } = values
+      // Remove undefined/empty optional fields so Supabase doesn't reject them
+      const cleanClient = Object.fromEntries(
+        Object.entries({ ...clientData, segmento, status: 'implantacao' })
+          .filter(([, v]) => v !== undefined && v !== '')
+      )
       const result = await create.mutateAsync({
-        client: { ...clientData, segmento, status: 'implantacao' },
+        client: cleanClient,
         project: { sistemas_contratados, responsavel_cs_id, status: 'em_andamento' },
       })
       toast({ type: 'success', message: 'Cliente criado com sucesso!' })
