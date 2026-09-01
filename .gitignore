@@ -13,8 +13,12 @@ dist-ssr/
 .env.local
 .env.production
 
+# VS Code — ignorar configs pessoais, mas manter settings do projeto
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
 # Editores
-.vscode/
 .idea/
 *.suo
 *.ntvs*
