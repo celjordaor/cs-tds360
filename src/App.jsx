@@ -1,12 +1,13 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import LoginPage from '@/features/auth/LoginPage'
-import ForgotPassword from '@/features/auth/ForgotPassword'
-import ResetPassword from '@/features/auth/ResetPassword'
+import LoginPage       from '@/features/auth/LoginPage'
+import ForgotPassword  from '@/features/auth/ForgotPassword'
+import ResetPassword   from '@/features/auth/ResetPassword'
+import ClientsListPage from '@/features/clients/ClientsListPage'
+import ClientPage      from '@/features/clients/ClientPage'
 import {
   RoleHome,
   AnalyticsPage,
   DashboardsPage,
-  CustomersPage,
   SettingsPage,
 } from '@/routes/index'
 
@@ -15,18 +16,21 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         {/* Públicas */}
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login"           element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/reset-password"  element={<ResetPassword />} />
 
-        {/* Raiz — redireciona para home do perfil */}
+        {/* Raiz → home do perfil */}
         <Route path="/" element={<RoleHome />} />
 
-        {/* Protegidas */}
-        <Route path="/analytics"  element={<AnalyticsPage />} />
-        <Route path="/dashboards" element={<DashboardsPage />} />
-        <Route path="/customers"  element={<CustomersPage />} />
-        <Route path="/settings"   element={<SettingsPage />} />
+        {/* Clientes */}
+        <Route path="/clients"     element={<ClientsListPage />} />
+        <Route path="/clients/:id" element={<ClientPage />} />
+
+        {/* Demais protegidas */}
+        <Route path="/analytics"   element={<AnalyticsPage />} />
+        <Route path="/dashboards"  element={<DashboardsPage />} />
+        <Route path="/settings"    element={<SettingsPage />} />
 
         {/* 404 */}
         <Route path="*" element={<Navigate to="/" replace />} />

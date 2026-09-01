@@ -4,30 +4,10 @@ import { useAuth } from '@/hooks/useAuth'
 import { getInitials } from '@/lib/utils'
 
 const NAV_ITEMS = [
-  {
-    label: 'Analytics CS',
-    icon: BarChart2,
-    to: '/analytics',
-    roles: ['super_admin', 'admin', 'manager'],
-  },
-  {
-    label: 'Dashboards',
-    icon: TrendingUp,
-    to: '/dashboards',
-    roles: ['super_admin', 'admin', 'manager'],
-  },
-  {
-    label: 'Customer Success',
-    icon: Users,
-    to: '/customers',
-    roles: ['super_admin', 'admin', 'manager', 'cs'],
-  },
-  {
-    label: 'Configurações',
-    icon: Settings,
-    to: '/settings',
-    roles: ['super_admin', 'admin'],
-  },
+  { label: 'Analytics CS',      icon: BarChart2,   to: '/analytics',  roles: ['super_admin','admin','manager'] },
+  { label: 'Dashboards',        icon: TrendingUp,  to: '/dashboards', roles: ['super_admin','admin','manager'] },
+  { label: 'Customer Success',  icon: Users,       to: '/clients',    roles: ['super_admin','admin','manager','cs'] },
+  { label: 'Configurações',     icon: Settings,    to: '/settings',   roles: ['super_admin','admin'] },
 ]
 
 const ROLE_LABELS = {
@@ -41,14 +21,11 @@ export default function Sidebar() {
   const { profile, signOut } = useAuth()
   const navigate = useNavigate()
 
-  const visibleItems = NAV_ITEMS.filter(
-    item => profile?.role && item.roles.includes(profile.role)
-  )
+  const visibleItems = NAV_ITEMS.filter(item => profile?.role && item.roles.includes(profile.role))
 
-  async function handleSignOut() {
-    await signOut()
-    navigate('/login')
-  }
+  async function handleSignOut() { await signOut(); navigate('/login') }
+
+  const displayName = profile?.full_name || profile?.nome || ''
 
   return (
     <aside className="w-64 min-h-screen bg-slate-900 flex flex-col shrink-0">
@@ -65,16 +42,14 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Perfil do usuário */}
+      {/* Perfil */}
       <div className="px-6 py-4 border-b border-slate-800">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-orange-500/20 border border-orange-500/30 rounded-full flex items-center justify-center shrink-0">
-            <span className="text-orange-400 text-xs font-semibold">
-              {getInitials(profile?.nome || '')}
-            </span>
+            <span className="text-orange-400 text-xs font-semibold">{getInitials(displayName)}</span>
           </div>
           <div className="min-w-0">
-            <p className="text-white text-sm font-medium truncate">{profile?.nome || '...'}</p>
+            <p className="text-white text-sm font-medium truncate">{displayName || '…'}</p>
             <p className="text-slate-400 text-xs">{ROLE_LABELS[profile?.role] || ''}</p>
           </div>
         </div>
@@ -83,15 +58,10 @@ export default function Sidebar() {
       {/* Navegação */}
       <nav className="flex-1 px-3 py-4 space-y-1">
         {visibleItems.map(({ label, icon: Icon, to }) => (
-          <NavLink
-            key={to}
-            to={to}
+          <NavLink key={to} to={to} end={to === '/'}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors group
-              ${isActive
-                ? 'bg-orange-500/15 text-orange-400 font-medium'
-                : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-              }`
+              ${isActive ? 'bg-orange-500/15 text-orange-400 font-medium' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'}`
             }
           >
             {({ isActive }) => (
@@ -107,10 +77,8 @@ export default function Sidebar() {
 
       {/* Logout */}
       <div className="px-3 py-4 border-t border-slate-800">
-        <button
-          onClick={handleSignOut}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-red-400 transition-colors w-full"
-        >
+        <button onClick={handleSignOut}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-red-400 transition-colors w-full">
           <LogOut className="w-4 h-4 shrink-0" />
           <span>Sair</span>
         </button>
