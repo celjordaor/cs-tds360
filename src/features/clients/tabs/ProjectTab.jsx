@@ -8,7 +8,8 @@ import { useConfigOptionsActive } from '@/hooks/useConfigOptions'
 import { useProfilesCS } from '@/hooks/useProfiles'
 import FormField from '@/components/form/FormField'
 import PhoneInput from '@/components/form/PhoneInput'
-import SelectField from '@/components/form/SelectField'
+import MultiSelect from '@/components/form/MultiSelect'
+import SearchSelect from '@/components/form/SearchSelect'
 import Toggle from '@/components/ui/Toggle'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import ContactPopover from '../components/ContactPopover'
@@ -176,8 +177,7 @@ export default function ProjectTab({ client, project }) {
             <input className="input" value={cForm.cnpj ?? ''} onChange={scev('cnpj')} maxLength={18} />
           </FormField>
           <FormField label="Segmentos" className="col-span-2">
-            <SelectField
-              isMulti
+            <MultiSelect
               options={segmentosOpts}
               value={cForm.segmentos ?? []}
               onChange={sc('segmentos')}
@@ -185,11 +185,12 @@ export default function ProjectTab({ client, project }) {
             />
           </FormField>
           <FormField label="Status do Cliente" className="col-span-2">
-            <SelectField
+            <SearchSelect
               options={statusOpts}
-              value={cForm.status ?? ''}
+              value={cForm.status ?? null}
               onChange={sc('status')}
               placeholder="Selecione o status…"
+              clearable={false}
             />
           </FormField>
           <FormField label="CEP">
@@ -213,8 +214,7 @@ export default function ProjectTab({ client, project }) {
         complete={isSistComplete}
       >
         <FormField label="Sistemas Contratados">
-          <SelectField
-            isMulti
+          <MultiSelect
             options={sistemasOpts}
             value={pForm.sistemas_contratados ?? []}
             onChange={sp('sistemas_contratados')}
@@ -223,11 +223,12 @@ export default function ProjectTab({ client, project }) {
         </FormField>
         <div className="mt-3">
           <FormField label="Status do Projeto">
-            <SelectField
+            <SearchSelect
               options={PROJECT_STATUS_OPTS}
-              value={pForm.status ?? ''}
+              value={pForm.status ?? null}
               onChange={sp('status')}
               placeholder="Selecione o status…"
+              clearable={false}
             />
           </FormField>
         </div>
@@ -243,25 +244,25 @@ export default function ProjectTab({ client, project }) {
       >
         <div className="grid grid-cols-2 gap-3">
           <FormField label="Responsável CS" className="col-span-2">
-            <SelectField
+            <SearchSelect
               options={profileOpts}
-              value={pForm.responsavel_cs_id ?? ''}
+              value={pForm.responsavel_cs_id ?? null}
               onChange={sp('responsavel_cs_id')}
               placeholder="Selecione…"
             />
           </FormField>
           <FormField label="Apoio CS">
-            <SelectField
+            <SearchSelect
               options={profileOpts}
-              value={pForm.apoio_cs_id ?? ''}
+              value={pForm.apoio_cs_id ?? null}
               onChange={sp('apoio_cs_id')}
               placeholder="Selecione…"
             />
           </FormField>
           <FormField label="Resp. Técnico">
-            <SelectField
+            <SearchSelect
               options={profileOpts}
-              value={pForm.responsavel_tecnico_id ?? ''}
+              value={pForm.responsavel_tecnico_id ?? null}
               onChange={sp('responsavel_tecnico_id')}
               placeholder="Selecione…"
             />
