@@ -94,17 +94,27 @@ export default function ProjectTab({ client, project }) {
         subtitle="Razão social, CNPJ, segmento e localização"
         complete={isIdentComplete}
       >
-        <div className="grid grid-cols-2 gap-3">
-          <FormField label="Razão Social" className="col-span-2">
+        <div className="grid grid-cols-4 gap-3">
+          {/* Razão Social (largo) + Status (menor) na mesma linha */}
+          <FormField label="Razão Social" className="col-span-3">
             <input className="input" value={cForm.razao_social ?? ''} onChange={scev('razao_social')} />
           </FormField>
-          <FormField label="Nome Fantasia">
+          <FormField label="Status do Projeto">
+            <SearchSelect
+              options={statusOpts}
+              value={cForm.status ?? null}
+              onChange={sc('status')}
+              placeholder="Status…"
+              clearable={false}
+            />
+          </FormField>
+          <FormField label="Nome Fantasia" className="col-span-2">
             <input className="input" value={cForm.fantasia ?? ''} onChange={scev('fantasia')} />
           </FormField>
-          <FormField label="CNPJ">
+          <FormField label="CNPJ" className="col-span-2">
             <input className="input" value={cForm.cnpj ?? ''} onChange={scev('cnpj')} maxLength={18} />
           </FormField>
-          <FormField label="Segmentos" className="col-span-2">
+          <FormField label="Segmentos" className="col-span-4">
             <MultiSelect
               options={segmentosOpts}
               value={cForm.segmentos ?? []}
@@ -112,20 +122,11 @@ export default function ProjectTab({ client, project }) {
               placeholder="Selecione os segmentos…"
             />
           </FormField>
-          {/* Status fica aqui — único campo de status, renomeado para "Status do Projeto" */}
-          <FormField label="Status do Projeto" className="col-span-2">
-            <SearchSelect
-              options={statusOpts}
-              value={cForm.status ?? null}
-              onChange={sc('status')}
-              placeholder="Selecione o status…"
-              clearable={false}
-            />
-          </FormField>
+          {/* CEP + Cidade + Estado na mesma linha */}
           <FormField label="CEP">
             <input className="input" value={cForm.cep ?? ''} onChange={scev('cep')} maxLength={9} />
           </FormField>
-          <FormField label="Cidade">
+          <FormField label="Cidade" className="col-span-2">
             <input className="input" value={cForm.cidade ?? ''} onChange={scev('cidade')} />
           </FormField>
           <FormField label="Estado">
@@ -161,12 +162,21 @@ export default function ProjectTab({ client, project }) {
         complete={isRespComplete}
       >
         <div className="grid grid-cols-2 gap-3">
-          <FormField label="Responsável CS" className="col-span-2">
+          {/* Responsável CS e Comercial na mesma linha */}
+          <FormField label="Responsável CS">
             <SearchSelect
               options={profileOpts}
               value={pForm.responsavel_cs_id ?? null}
               onChange={sp('responsavel_cs_id')}
               placeholder="Selecione…"
+            />
+          </FormField>
+          <FormField label="Responsável Comercial">
+            <input
+              className="input"
+              value={pForm.responsavel_comercial ?? ''}
+              onChange={spev('responsavel_comercial')}
+              placeholder="Nome do responsável"
             />
           </FormField>
           <FormField label="Apoio CS">
@@ -183,14 +193,6 @@ export default function ProjectTab({ client, project }) {
               value={pForm.responsavel_tecnico_id ?? null}
               onChange={sp('responsavel_tecnico_id')}
               placeholder="Selecione…"
-            />
-          </FormField>
-          <FormField label="Responsável Comercial" className="col-span-2">
-            <input
-              className="input"
-              value={pForm.responsavel_comercial ?? ''}
-              onChange={spev('responsavel_comercial')}
-              placeholder="Nome do responsável comercial"
             />
           </FormField>
         </div>
