@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import { useClients } from '@/hooks/useClients'
+import { useConfigOptionsActive } from '@/hooks/useConfigOptions'
 import { useDebounce } from '@/hooks/useDebounce'
 import { RequireAuth } from '@/routes/index'
 import AppLayout from '@/components/layout/AppLayout'
@@ -11,13 +12,6 @@ import FilterBar from '@/components/data/FilterBar'
 import StatusBadge from './components/StatusBadge'
 import NewClientModal from './NewClientModal'
 
-const STATUS_FILTER = [
-  { value: 'prospecto',   label: 'Prospecto'   },
-  { value: 'implantacao', label: 'Implantação' },
-  { value: 'ativo',       label: 'Ativo'       },
-  { value: 'pausado',     label: 'Pausado'     },
-  { value: 'cancelado',   label: 'Cancelado'   },
-]
 const SISTEMA_FILTER = [
   { value: 'adsim',       label: 'Adsim'       },
   { value: 'midiaplus',   label: 'Mídia+'      },
@@ -85,6 +79,7 @@ function ClientsListInner() {
   const [filters, setFilters] = useState({})
   const [showNew, setShowNew] = useState(false)
   const dSearch = useDebounce(search, 350)
+  const { data: statusOpts = [] } = useConfigOptionsActive('status_cliente')
 
   const { data: clients = [], isLoading } = useClients({ search: dSearch, ...filters })
 
@@ -114,7 +109,7 @@ function ClientsListInner() {
           onChange={setFilter}
           onClear={clearAll}
           filters={[
-            { key: 'status',  label: 'Status',  options: STATUS_FILTER  },
+            { key: 'status',  label: 'Status',  options: statusOpts  },
             { key: 'sistema', label: 'Sistema', options: SISTEMA_FILTER },
           ]}
         />

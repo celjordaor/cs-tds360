@@ -12,11 +12,6 @@ import SearchSelect from '@/components/form/SearchSelect'
 import AutosaveIndicator from '../components/AutosaveIndicator'
 import ContactsTable from '../components/ContactsTable'
 
-const STATUS_OPTS = [
-  { value: 'prospecto', label: 'Prospecto' }, { value: 'implantacao', label: 'Implantação' },
-  { value: 'ativo', label: 'Ativo' }, { value: 'pausado', label: 'Pausado' },
-  { value: 'cancelado', label: 'Cancelado' },
-]
 const PROJECT_STATUS_OPTS = [
   { value: 'em_andamento', label: 'Em andamento' }, { value: 'concluido', label: 'Concluído' },
   { value: 'cancelado', label: 'Cancelado' },
@@ -41,6 +36,7 @@ export default function ProjectTab({ client, project }) {
 
   const { data: sistemas = [] } = useConfigOptionsActive('sistema')
   const { data: segmentos = [] } = useConfigOptionsActive('segmento')
+  const { data: statusClienteOpts = [] } = useConfigOptionsActive('status_cliente')
   const updateClient  = useUpdateClient()
   const updateProject = useUpdateProject()
   const { data: contacts = [] } = useContacts(project?.id)
@@ -94,7 +90,8 @@ export default function ProjectTab({ client, project }) {
           </FormField>
           <FormField label="Status">
             <select className="input" value={clientForm.status ?? ''} onChange={scev('status')}>
-              {STATUS_OPTS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              <option value="">Selecionar…</option>
+              {statusClienteOpts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </FormField>
           <FormField label="Segmento">
