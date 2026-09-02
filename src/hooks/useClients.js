@@ -150,3 +150,30 @@ export function useDeleteContact() {
     onSuccess: (r) => qc.invalidateQueries({ queryKey: ['contacts', r.project_id] }),
   })
 }
+
+export function useDeleteClient() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (clientId) => {
+      // Busca projetos para deletar dependentes em cascata
+      const { data: projs, error: pe } = await supabase
+        .from('projects').select('id').eq('client_id', clientId)
+      if (pe) throw pe
+
+      const projIds = (projs ?? []).map(p => p.id)
+
+      if (projIds.length > 0) {
+        const { error: e1 } = await supabase.from('client_users').delete().in('project_id', projIds)
+        if (e1) throw e1
+        const { error: e2 } = await supabase.from('contacts').delete().in('project_id', projIds)
+        if (e2) throw e2
+        const { error: e3 } = await supabase.from('projects').delete().in('id', projIds)
+        if (e3) throw e3
+      }
+
+      const { error } = await supabase.from('clients').delete().eq('id', clientId)
+      if (error) throw error
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['clients'] }),
+  })
+}

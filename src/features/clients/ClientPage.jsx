@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { useClient, useProject, useContacts } from '@/hooks/useClients'
+import { useClient, useProject, useContacts, useDeleteClient } from '@/hooks/useClients'
+import { useToast } from '@/components/shared/ToastContext'
 import { RequireAuth } from '@/routes/index'
 import AppLayout from '@/components/layout/AppLayout'
 import Spinner from '@/components/ui/Spinner'
@@ -12,11 +13,11 @@ import UsuariosClienteTab from './tabs/UsuariosClienteTab'
 import AlertasTab from './tabs/AlertasTab'
 
 const TABS = [
-  { id: 'projeto',   label: 'Projeto'        },
-  { id: 'emissoras', label: 'Emissoras'      },
-  { id: 'config',    label: 'Configurações'  },
-  { id: 'usuarios',  label: 'Usuários'       },
-  { id: 'alertas',   label: 'Alertas'        },
+  { id: 'projeto',   label: 'Projeto'       },
+  { id: 'emissoras', label: 'Emissoras'     },
+  { id: 'config',    label: 'Configurações' },
+  { id: 'usuarios',  label: 'Usuários'      },
+  { id: 'alertas',   label: 'Alertas'       },
 ]
 
 export default function ClientPage() {
@@ -32,16 +33,27 @@ export default function ClientPage() {
 function ClientPageInner() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const toast = useToast()
 
   const { data: client, isLoading: loadingClient } = useClient(id)
   const { data: project, isLoading: loadingProject } = useProject(id)
-  // Contacts carregam assim que o projeto estiver disponível (enabled: !!projectId)
   const { data: contacts = [] } = useContacts(project?.id)
+  const deleteClient = useDeleteClient()
 
   const activeTab = new URLSearchParams(window.location.search).get('tab') || 'projeto'
 
   function setTab(t) {
     navigate(`/clients/${id}?tab=${t}`, { replace: true })
+  }
+
+  async function handleDeleteClient() {
+    try {
+      await deleteClient.mutateAsync(id)
+      toast({ type: 'success', message: 'Cliente excluído com sucesso.' })
+      navigate('/clients')
+    } catch {
+      toast({ type: 'error', message: 'Erro ao excluir cliente. Tente novamente.' })
+    }
   }
 
   if (loadingClient) {
@@ -53,12 +65,13 @@ function ClientPageInner() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      {/* Cabeçalho reutilizável */}
       <ClientPageHeader
         client={client}
         project={project}
         contacts={contacts}
         onBack={() => navigate('/clients')}
+        onDelete={handleDeleteClient}
+        isDeleting={deleteClient.isPending}
       />
 
       {/* Tabs */}
@@ -107,8 +120,8 @@ function ClientPageInner() {
             ? <div className="flex justify-center py-12"><Spinner /></div>
             : <AlertasTab project={project} />
         )}
-        {activeTab !== 'projeto' && activeTab !== 'emissoras' && activeTab !== 'config' && activeTab !== 'usuarios' && activeTab !== 'alertas' && (
-          <ComingSoon title={TABS.find((t) => t.id === activeTab)?.label} />
+        {!['projeto','emissoras','config','usuarios','alertas'].includes(activeTab) && (
+          <ComingSoon title={TABS.find(t => t.id === activeTab)?.label} />
         )}
       </div>
     </div>
