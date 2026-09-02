@@ -65,12 +65,12 @@ function mergeConfig(raw) {
 
 // ── Estilos reutilizáveis ─────────────────────────────────────────────────────
 
-const inputCls = 'w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white'
-const textareaCls = 'w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white resize-none'
+const inputCls = 'w-full px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white'
+const textareaCls = 'w-full px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white resize-none'
 
 function Label({ children }) {
   return (
-    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
+    <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">
       {children}
     </label>
   )
@@ -596,7 +596,7 @@ function ValidacaoSection({ form, setForm }) {
 
 export default function ConfigTecnicaTab({ project }) {
   const updateProject = useUpdateProject()
-  const toast         = useToast()
+  const { toast } = useToast()
 
   const sistemas    = project?.sistemas_contratados ?? []
   const hasAdsim    = sistemas.includes('adsim')
