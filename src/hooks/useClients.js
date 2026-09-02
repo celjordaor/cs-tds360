@@ -86,11 +86,25 @@ export function useCreateClient() {
   })
 }
 
+// Colunas válidas da tabela clients — nunca enviar campo inexistente ao banco
+const CLIENT_COLS = new Set([
+  'razao_social','fantasia','cnpj','cidade','estado','segmentos','status','created_by',
+])
+// Colunas válidas da tabela projects
+const PROJECT_COLS = new Set([
+  'sistemas_contratados','contrato_numero','data_assinatura','data_kickoff',
+  'data_golive_prevista','data_golive_real','responsavel_comercial','responsavel_cs_id',
+  'apoio_cs_id','responsavel_tecnico_id','status','movidesk_id','sensedata_id',
+  'licencas_midiaplus','licencas_adsim','licencas_adanalytics','licencas_adchecking',
+  'alertas_suporte','obs_geral','onboarding_pct',
+])
+
 export function useUpdateClient() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, ...data }) => {
-      const { error } = await supabase.from('clients').update(data).eq('id', id)
+      const clean = Object.fromEntries(Object.entries(data).filter(([k]) => CLIENT_COLS.has(k)))
+      const { error } = await supabase.from('clients').update(clean).eq('id', id)
       if (error) throw error
     },
     onSuccess: (_, v) => qc.invalidateQueries({ queryKey: [...KEY, v.id] }),
@@ -101,7 +115,8 @@ export function useUpdateProject() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, ...data }) => {
-      const { error } = await supabase.from('projects').update(data).eq('id', id)
+      const clean = Object.fromEntries(Object.entries(data).filter(([k]) => PROJECT_COLS.has(k)))
+      const { error } = await supabase.from('projects').update(clean).eq('id', id)
       if (error) throw error
     },
     onSuccess: (_, v) => qc.invalidateQueries({ queryKey: ['projects'] }),

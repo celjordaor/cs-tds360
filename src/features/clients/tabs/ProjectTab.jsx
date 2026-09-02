@@ -87,7 +87,7 @@ export default function ProjectTab({ client, project }) {
             <input className="input" value={clientForm.razao_social ?? ''} onChange={scev('razao_social')} />
           </FormField>
           <FormField label="Nome Fantasia">
-            <input className="input" value={clientForm.nome_fantasia ?? ''} onChange={scev('nome_fantasia')} />
+            <input className="input" value={clientForm.fantasia ?? ''} onChange={scev('fantasia')} />
           </FormField>
           <FormField label="CNPJ">
             <CNPJInput value={clientForm.cnpj ?? ''} onChange={sc('cnpj')} />
@@ -100,22 +100,22 @@ export default function ProjectTab({ client, project }) {
           <FormField label="Segmento">
             <MultiSelect
               options={segmentos}
-              value={Array.isArray(clientForm.segmento) ? clientForm.segmento : []}
-              onChange={sc('segmento')}
+              value={Array.isArray(clientForm.segmentos) ? clientForm.segmentos : []}
+              onChange={sc('segmentos')}
               placeholder="Selecionar segmentos…"
             />
           </FormField>
           <FormField label="Cidade / UF">
             <div className="flex gap-2">
               <input className="input flex-1" placeholder="Cidade" value={clientForm.cidade ?? ''} onChange={scev('cidade')} />
-              <input className="input w-16 uppercase" placeholder="UF" maxLength={2} value={clientForm.uf ?? ''} onChange={scev('uf')} />
+              <input className="input w-16 uppercase" placeholder="UF" maxLength={2} value={clientForm.estado ?? ''} onChange={scev('estado')} />
             </div>
           </FormField>
           <FormField label="CEP">
             <CEPInput
               value={clientForm.cep ?? ''}
               onChange={sc('cep')}
-              onAddress={({ localidade, uf }) => setClientForm(f => ({ ...f, cidade: localidade, uf }))}
+              onAddress={({ localidade, uf }) => setClientForm(f => ({ ...f, cidade: localidade, estado: uf }))}
             />
           </FormField>
         </div>
@@ -163,10 +163,10 @@ export default function ProjectTab({ client, project }) {
             </select>
           </FormField>
           <FormField label="Data de Contrato" hint="DD/MM/AAAA">
-            <input type="date" className="input" value={projectForm.data_contrato ?? ''} onChange={spev('data_contrato')} />
+            <input type="date" className="input" value={projectForm.data_assinatura ?? ''} onChange={spev('data_assinatura')} />
           </FormField>
           <FormField label="Previsão Go-live" hint="DD/MM/AAAA">
-            <input type="date" className="input" value={projectForm.previsao_golive ?? ''} onChange={spev('previsao_golive')} />
+            <input type="date" className="input" value={projectForm.data_golive_prevista ?? ''} onChange={spev('data_golive_prevista')} />
           </FormField>
         </div>
       </Section>
@@ -175,10 +175,10 @@ export default function ProjectTab({ client, project }) {
       <Section title="IDs Externos">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField label="ID Movidesk">
-            <input className="input" value={projectForm.id_movidesk ?? ''} onChange={spev('id_movidesk')} />
+            <input className="input" value={projectForm.movidesk_id ?? ''} onChange={spev('movidesk_id')} />
           </FormField>
           <FormField label="ID Sense Data">
-            <input className="input" value={projectForm.id_sensedata ?? ''} onChange={spev('id_sensedata')} />
+            <input className="input" value={projectForm.sensedata_id ?? ''} onChange={spev('sensedata_id')} />
           </FormField>
         </div>
       </Section>

@@ -62,7 +62,7 @@ function ClientPageInner() {
           {client.status && <StatusBadge status={client.status} />}
         </div>
       }
-      subtitle={client.nome_fantasia || client.cnpj}
+      subtitle={client.fantasia || client.cnpj}
     >
       {/* Tabs */}
       <div className="border-b border-slate-200 mb-6">
