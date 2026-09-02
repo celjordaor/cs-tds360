@@ -55,7 +55,7 @@ export default function DataTable({ columns = [], rows = [], loading = false,
                   className={`border-b border-slate-50 last:border-0 transition-colors ${onRowClick ? 'cursor-pointer hover:bg-orange-50/50' : 'hover:bg-slate-50/50'}`}
                 >
                   {columns.map(col => (
-                    <td key={col.key} className="px-4 py-3 text-slate-700">
+                    <td key={col.key} className="px-4 py-3 text-xs text-slate-700">
                       {col.render ? col.render(row) : row[col.key] ?? '—'}
                     </td>
                   ))}

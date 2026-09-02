@@ -88,7 +88,7 @@ export function useCreateClient() {
 
 // Colunas válidas da tabela clients — nunca enviar campo inexistente ao banco
 const CLIENT_COLS = new Set([
-  'razao_social','fantasia','cnpj','cidade','estado','segmentos','status','created_by',
+  'razao_social','fantasia','cnpj','cep','cidade','estado','segmentos','status','created_by',
 ])
 // Colunas válidas da tabela projects
 const PROJECT_COLS = new Set([

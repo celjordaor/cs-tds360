@@ -13,6 +13,7 @@ const MAP = {
 }
 
 export default function StatusBadge({ status }) {
+  if (!status) return <span className="text-slate-400 text-xs">—</span>
   const cfg = MAP[status] ?? { label: status, variant: 'slate' }
   return <Badge variant={cfg.variant}>{cfg.label}</Badge>
 }

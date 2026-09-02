@@ -41,8 +41,7 @@ export default function NewClientModal({ open, onClose, onCreated }) {
 
   async function onSubmit(values) {
     try {
-      const { segmentos, sistemas_contratados, responsavel_cs_id, cep: _cep, ...clientData } = values
-      // Strip undefined/empty — cep is only for autofill, not stored on clients
+      const { segmentos, sistemas_contratados, responsavel_cs_id, ...clientData } = values
       const cleanClient = Object.fromEntries(
         Object.entries({ ...clientData, segmentos })
           .filter(([, v]) => v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0))

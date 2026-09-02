@@ -30,12 +30,12 @@ const COLUMNS = [
     render: r => (
       <div>
         <p className="font-medium text-slate-800">{r.razao_social}</p>
-        {r.nome_fantasia && <p className="text-xs text-slate-400">{r.nome_fantasia}</p>}
+        {r.fantasia && <p className="text-xs text-slate-400">{r.fantasia}</p>}
       </div>
     )
   },
-  { key: 'cnpj',   header: 'CNPJ',   width: '160px', render: r => r.cnpj || '—' },
-  { key: 'cidade', header: 'Cidade',  width: '140px', sortable: true, render: r => r.cidade ? `${r.cidade}/${r.uf||''}` : '—' },
+  { key: 'cnpj',   header: 'CNPJ',   width: '200px', render: r => r.cnpj || '—' },
+  { key: 'cidade', header: 'Cidade',  width: '140px', sortable: true, render: r => r.cidade ? `${r.cidade}/${r.estado||''}` : '—' },
   { key: 'status', header: 'Status',  width: '130px', sortable: true,
     render: r => <StatusBadge status={r.status} /> },
   { key: 'sistemas', header: 'Sistemas', width: '180px',
