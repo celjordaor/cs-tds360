@@ -1,211 +1,495 @@
-import { useEffect, useState, useCallback } from 'react'
-import { useUpdateClient, useUpdateProject, useContacts } from '@/hooks/useClients'
-import { useProfilesCS } from '@/hooks/useProfiles'
-import { useDebounce } from '@/hooks/useDebounce'
+import { useState } from 'react'
+import {
+  User, LayoutGrid, Users, Calendar, Link2,
+  Star, AlertTriangle, Phone, Plus, Pencil, Trash2, Check,
+} from 'lucide-react'
+import { useUpdateClient, useUpdateProject, useContacts, useDeleteContact } from '@/hooks/useClients'
 import { useConfigOptionsActive } from '@/hooks/useConfigOptions'
+import { useProfilesCS } from '@/hooks/useProfiles'
 import FormField from '@/components/form/FormField'
-import CEPInput from '@/components/form/CEPInput'
-import CNPJInput from '@/components/form/CNPJInput'
 import PhoneInput from '@/components/form/PhoneInput'
-import MultiSelect from '@/components/form/MultiSelect'
-import SearchSelect from '@/components/form/SearchSelect'
-import AutosaveIndicator from '../components/AutosaveIndicator'
-import ContactsTable from '../components/ContactsTable'
+import SelectField from '@/components/form/SelectField'
+import Toggle from '@/components/ui/Toggle'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import ContactPopover from '../components/ContactPopover'
+
+// ─── Paleta de cores por seção ───────────────────────────────────────────────
+
+const GRAD = {
+  orange: 'linear-gradient(135deg, #FB923C, #F97316)',
+  violet: 'linear-gradient(135deg, #A78BFA, #7C3AED)',
+  blue:   'linear-gradient(135deg, #60A5FA, #3B82F6)',
+  green:  'linear-gradient(135deg, #34D399, #059669)',
+  sky:    'linear-gradient(135deg, #38BDF8, #0EA5E9)',
+  amber:  'linear-gradient(135deg, #FCD34D, #D97706)',
+  red:    'linear-gradient(135deg, #F87171, #DC2626)',
+}
+
+const BORDER = {
+  orange: '#F97316',
+  violet: '#7C3AED',
+  blue:   '#3B82F6',
+  green:  '#059669',
+  sky:    '#0EA5E9',
+  amber:  '#D97706',
+  red:    '#EF4444',
+}
 
 const PROJECT_STATUS_OPTS = [
-  { value: 'em_andamento', label: 'Em andamento' }, { value: 'concluido', label: 'Concluído' },
-  { value: 'cancelado', label: 'Cancelado' },
+  { value: 'implantacao', label: 'Implantação' },
+  { value: 'ativo',       label: 'Ativo' },
+  { value: 'pausado',     label: 'Pausado' },
+  { value: 'encerrado',   label: 'Encerrado' },
 ]
 
-function Section({ title, children }) {
+// ─── Componentes internos ────────────────────────────────────────────────────
+
+/**
+ * SectionCard — card com borda esquerda colorida e cabeçalho rico (Option A + C hybrid).
+ */
+function SectionCard({ color, icon: Icon, title, subtitle, complete, children }) {
+  const borderColor = BORDER[color] ?? '#94A3B8'
+  const gradient    = GRAD[color]  ?? 'linear-gradient(135deg,#94A3B8,#64748B)'
+
   return (
-    <div className="space-y-4">
-      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 pb-2">{title}</h3>
-      {children}
+    <div
+      className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden"
+      style={{ borderLeftColor: borderColor, borderLeftWidth: '3.5px' }}
+    >
+      {/* Cabeçalho */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-50">
+        <div className="flex items-center gap-3">
+          {/* Badge com gradiente */}
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm"
+            style={{ background: gradient }}
+          >
+            <Icon className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-slate-800 leading-tight">{title}</p>
+            {subtitle && (
+              <p className="text-xs text-slate-400 mt-0.5 leading-tight">{subtitle}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Indicador de preenchimento */}
+        {complete === true && (
+          <span className="flex items-center gap-1 text-xs font-medium text-emerald-600">
+            <span className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">
+              <Check className="w-3 h-3 text-emerald-600" strokeWidth={2.5} />
+            </span>
+          </span>
+        )}
+        {complete === false && (
+          <span className="w-5 h-5 rounded-full border-2 border-slate-300" />
+        )}
+      </div>
+
+      {/* Conteúdo */}
+      <div className="p-4">{children}</div>
     </div>
   )
 }
 
+// ─── Componente principal ────────────────────────────────────────────────────
+
 export default function ProjectTab({ client, project }) {
-  const [clientForm, setClientForm] = useState(client ?? {})
-  const [projectForm, setProjectForm] = useState(project ?? {})
-  const [saveStatus, setSaveStatus] = useState('idle')
+  // ── Estado do formulário ──
+  const [cForm, setCForm] = useState({ ...client })
+  const [pForm, setPForm] = useState({ ...project })
 
-  const debouncedClient  = useDebounce(clientForm,  800)
-  const debouncedProject = useDebounce(projectForm, 800)
+  // helpers para atualizar fields
+  const sc  = (field) => (value) => setCForm((f) => ({ ...f, [field]: value }))
+  const sp  = (field) => (value) => setPForm((f) => ({ ...f, [field]: value }))
+  const scev = (field) => (e) => sc(field)(e.target.value)
+  const spev = (field) => (e) => sp(field)(e.target.value)
 
-  const { data: sistemas = [] } = useConfigOptionsActive('sistema')
-  const { data: segmentos = [] } = useConfigOptionsActive('segmento')
-  const { data: statusClienteOpts = [] } = useConfigOptionsActive('status_cliente')
+  // dirty check
+  const clientDirty  = JSON.stringify(cForm) !== JSON.stringify(client)
+  const projectDirty = JSON.stringify(pForm) !== JSON.stringify(project)
+  const dirty = clientDirty || projectDirty
+
+  // ── Mutations ──
   const updateClient  = useUpdateClient()
   const updateProject = useUpdateProject()
-  const { data: contacts = [] } = useContacts(project?.id)
-  const { data: profiles = [] } = useProfilesCS()
 
-  // Sync props → form when parent reloads
-  useEffect(() => { if (client)  setClientForm(client)  }, [client?.id])
-  useEffect(() => { if (project) setProjectForm(project) }, [project?.id])
+  async function handleSave() {
+    if (clientDirty)  await updateClient.mutateAsync({ id: client.id, ...cForm })
+    if (projectDirty) await updateProject.mutateAsync({ id: project.id, ...pForm })
+  }
 
-  const autosave = useCallback(async (cd, pd) => {
-    if (!client?.id) return
-    setSaveStatus('saving')
-    try {
-      await Promise.all([
-        updateClient.mutateAsync({ id: client.id, ...cd }),
-        project?.id && updateProject.mutateAsync({ id: project.id, ...pd }),
-      ])
-      setSaveStatus('saved')
-      setTimeout(() => setSaveStatus('idle'), 2500)
-    } catch { setSaveStatus('error') }
-  }, [client?.id, project?.id])
+  function handleCancel() {
+    setCForm({ ...client })
+    setPForm({ ...project })
+  }
 
-  useEffect(() => {
-    if (!client?.id) return
-    autosave(debouncedClient, debouncedProject)
-  }, [debouncedClient, debouncedProject])
+  // ── Dados auxiliares ──
+  const { data: sistemasOpts = [] }  = useConfigOptionsActive('sistema')
+  const { data: segmentosOpts = [] } = useConfigOptionsActive('segmento')
+  const { data: statusOpts = [] }    = useConfigOptionsActive('status_cliente')
+  const { data: profiles = [] }      = useProfilesCS()
+  const { data: contacts = [] }      = useContacts(project?.id)
+  const deleteContact = useDeleteContact()
 
-  function sc(field) { return v => setClientForm(f => ({ ...f, [field]: v })) }
-  function sp(field) { return v => setProjectForm(f => ({ ...f, [field]: v })) }
-  function scev(field) { return e => sc(field)(e.target.value) }
-  function spev(field) { return e => sp(field)(e.target.value) }
+  const profileOpts = profiles.map((p) => ({ value: p.id, label: p.nome }))
+
+  // ── Contatos: popover ──
+  const [contactPopover, setContactPopover] = useState({ open: false, contact: null })
+  const openNew  = () => setContactPopover({ open: true, contact: null })
+  const openEdit = (c) => setContactPopover({ open: true, contact: c })
+  const closePopover = () => setContactPopover({ open: false, contact: null })
+
+  // ── Contatos: confirmação de exclusão ──
+  const [deleteTarget, setDeleteTarget] = useState(null)
+
+  // ── Indicadores de conclusão ──
+  const isIdentComplete = !!(cForm.razao_social && cForm.cnpj && cForm.segmentos?.length)
+  const isSistComplete  = !!(pForm.sistemas_contratados?.length)
+  const isRespComplete  = !!(pForm.responsavel_cs_id)
+  const isContratoComp  = !!(pForm.data_kickoff || pForm.data_golive_prevista)
+  const isIdsComplete   = !!(pForm.movidesk_id || pForm.sensedata_id)
+  const isContactsComp  = contacts.length > 0
+
+  const sponsors = contacts.filter((c) => c.is_sponsor)
 
   return (
-    <div className="space-y-8">
-      {/* Indicador autosave */}
-      <div className="flex justify-end">
-        <AutosaveIndicator status={saveStatus} />
-      </div>
+    <div className="space-y-4 pb-28">
 
-      {/* Identificação */}
-      <Section title="Identificação">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField label="Razão Social" required>
-            <input className="input" value={clientForm.razao_social ?? ''} onChange={scev('razao_social')} />
+      {/* ── 1. Identificação ──────────────────────────────────────────── */}
+      <SectionCard
+        color="orange"
+        icon={User}
+        title="Identificação"
+        subtitle="Razão social, CNPJ, segmento e localização"
+        complete={isIdentComplete}
+      >
+        <div className="grid grid-cols-2 gap-3">
+          <FormField label="Razão Social" className="col-span-2">
+            <input className="input" value={cForm.razao_social ?? ''} onChange={scev('razao_social')} />
           </FormField>
           <FormField label="Nome Fantasia">
-            <input className="input" value={clientForm.fantasia ?? ''} onChange={scev('fantasia')} />
+            <input className="input" value={cForm.fantasia ?? ''} onChange={scev('fantasia')} />
           </FormField>
           <FormField label="CNPJ">
-            <CNPJInput value={clientForm.cnpj ?? ''} onChange={sc('cnpj')} />
+            <input className="input" value={cForm.cnpj ?? ''} onChange={scev('cnpj')} maxLength={18} />
           </FormField>
-          <FormField label="Status">
-            <select className="input" value={clientForm.status ?? ''} onChange={scev('status')}>
-              <option value="">Selecionar…</option>
-              {statusClienteOpts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-          </FormField>
-          <FormField label="Segmento">
-            <MultiSelect
-              options={segmentos}
-              value={Array.isArray(clientForm.segmentos) ? clientForm.segmentos : []}
+          <FormField label="Segmentos" className="col-span-2">
+            <SelectField
+              isMulti
+              options={segmentosOpts}
+              value={cForm.segmentos ?? []}
               onChange={sc('segmentos')}
-              placeholder="Selecionar segmentos…"
+              placeholder="Selecione os segmentos…"
             />
           </FormField>
-          <FormField label="Cidade / UF">
-            <div className="flex gap-2">
-              <input className="input flex-1" placeholder="Cidade" value={clientForm.cidade ?? ''} onChange={scev('cidade')} />
-              <input className="input w-16 uppercase" placeholder="UF" maxLength={2} value={clientForm.estado ?? ''} onChange={scev('estado')} />
-            </div>
+          <FormField label="Status do Cliente" className="col-span-2">
+            <SelectField
+              options={statusOpts}
+              value={cForm.status ?? ''}
+              onChange={sc('status')}
+              placeholder="Selecione o status…"
+            />
           </FormField>
           <FormField label="CEP">
-            <CEPInput
-              value={clientForm.cep ?? ''}
-              onChange={sc('cep')}
-              onAddress={({ localidade, uf }) => setClientForm(f => ({ ...f, cidade: localidade, estado: uf }))}
-            />
+            <input className="input" value={cForm.cep ?? ''} onChange={scev('cep')} maxLength={9} />
+          </FormField>
+          <FormField label="Cidade">
+            <input className="input" value={cForm.cidade ?? ''} onChange={scev('cidade')} />
+          </FormField>
+          <FormField label="Estado">
+            <input className="input" value={cForm.estado ?? ''} onChange={scev('estado')} maxLength={2} />
           </FormField>
         </div>
-      </Section>
+      </SectionCard>
 
-      {/* Sistemas contratados */}
-      <Section title="Sistemas Contratados">
-        <MultiSelect
-          options={sistemas}
-          value={Array.isArray(projectForm.sistemas_contratados) ? projectForm.sistemas_contratados : []}
-          onChange={sp('sistemas_contratados')}
-          placeholder="Selecionar sistemas…"
-        />
-      </Section>
-
-      {/* Responsáveis */}
-      <Section title="Responsáveis">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField label="Analista CS Principal">
-            <SearchSelect
-              options={profiles}
-              value={projectForm.responsavel_cs_id ?? null}
-              onChange={sp('responsavel_cs_id')}
-              placeholder="Selecionar analista…"
-            />
-          </FormField>
-          <FormField label="Analista CS Apoio">
-            <SearchSelect
-              options={profiles}
-              value={projectForm.apoio_cs_id ?? null}
-              onChange={sp('apoio_cs_id')}
-              placeholder="Selecionar analista…"
-              clearable
-            />
-          </FormField>
-        </div>
-      </Section>
-
-      {/* Contrato */}
-      <Section title="Contrato e Datas">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* ── 2. Sistemas ───────────────────────────────────────────────── */}
+      <SectionCard
+        color="violet"
+        icon={LayoutGrid}
+        title="Sistemas"
+        subtitle="Produtos TDSOFT ativos neste cliente"
+        complete={isSistComplete}
+      >
+        <FormField label="Sistemas Contratados">
+          <SelectField
+            isMulti
+            options={sistemasOpts}
+            value={pForm.sistemas_contratados ?? []}
+            onChange={sp('sistemas_contratados')}
+            placeholder="Selecione os sistemas…"
+          />
+        </FormField>
+        <div className="mt-3">
           <FormField label="Status do Projeto">
-            <select className="input" value={projectForm.status ?? 'em_andamento'} onChange={spev('status')}>
-              {PROJECT_STATUS_OPTS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-          </FormField>
-          <FormField label="Data de Contrato" hint="DD/MM/AAAA">
-            <input type="date" className="input" value={projectForm.data_assinatura ?? ''} onChange={spev('data_assinatura')} />
-          </FormField>
-          <FormField label="Previsão Go-live" hint="DD/MM/AAAA">
-            <input type="date" className="input" value={projectForm.data_golive_prevista ?? ''} onChange={spev('data_golive_prevista')} />
+            <SelectField
+              options={PROJECT_STATUS_OPTS}
+              value={pForm.status ?? ''}
+              onChange={sp('status')}
+              placeholder="Selecione o status…"
+            />
           </FormField>
         </div>
-      </Section>
+      </SectionCard>
 
-      {/* IDs Externos */}
-      <Section title="IDs Externos">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField label="ID Movidesk">
-            <input className="input" value={projectForm.movidesk_id ?? ''} onChange={spev('movidesk_id')} />
+      {/* ── 3. Responsáveis ───────────────────────────────────────────── */}
+      <SectionCard
+        color="blue"
+        icon={Users}
+        title="Responsáveis"
+        subtitle="Equipe CS alocada neste projeto"
+        complete={isRespComplete}
+      >
+        <div className="grid grid-cols-2 gap-3">
+          <FormField label="Responsável CS" className="col-span-2">
+            <SelectField
+              options={profileOpts}
+              value={pForm.responsavel_cs_id ?? ''}
+              onChange={sp('responsavel_cs_id')}
+              placeholder="Selecione…"
+            />
           </FormField>
-          <FormField label="ID Sense Data">
-            <input className="input" value={projectForm.sensedata_id ?? ''} onChange={spev('sensedata_id')} />
+          <FormField label="Apoio CS">
+            <SelectField
+              options={profileOpts}
+              value={pForm.apoio_cs_id ?? ''}
+              onChange={sp('apoio_cs_id')}
+              placeholder="Selecione…"
+            />
+          </FormField>
+          <FormField label="Resp. Técnico">
+            <SelectField
+              options={profileOpts}
+              value={pForm.responsavel_tecnico_id ?? ''}
+              onChange={sp('responsavel_tecnico_id')}
+              placeholder="Selecione…"
+            />
+          </FormField>
+          <FormField label="Responsável Comercial" className="col-span-2">
+            <input
+              className="input"
+              value={pForm.responsavel_comercial ?? ''}
+              onChange={spev('responsavel_comercial')}
+              placeholder="Nome do responsável comercial"
+            />
           </FormField>
         </div>
-      </Section>
+      </SectionCard>
 
-      {/* Licenças */}
-      <Section title="Licenças">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[['licencas_adsim','Adsim'],['licencas_adanalytics','Ad Analytics'],['licencas_adchecking','Adchecking'],['licencas_midiaplus','Mídia+']].map(([field,label]) => (
-            <FormField key={field} label={label}>
-              <input type="number" min="0" className="input" value={projectForm[field] ?? 0}
-                onChange={e => sp(field)(parseInt(e.target.value) || 0)} />
-            </FormField>
-          ))}
+      {/* ── 4. Contrato e Datas ───────────────────────────────────────── */}
+      <SectionCard
+        color="green"
+        icon={Calendar}
+        title="Contrato e Datas"
+        subtitle="Datas de assinatura, kickoff e go-live"
+        complete={isContratoComp}
+      >
+        <div className="grid grid-cols-2 gap-3">
+          <FormField label="Nº do Contrato" className="col-span-2">
+            <input className="input" value={pForm.contrato_numero ?? ''} onChange={spev('contrato_numero')} />
+          </FormField>
+          <FormField label="Data Assinatura">
+            <input className="input" type="date" value={pForm.data_assinatura ?? ''} onChange={spev('data_assinatura')} />
+          </FormField>
+          <FormField label="Data Kickoff">
+            <input className="input" type="date" value={pForm.data_kickoff ?? ''} onChange={spev('data_kickoff')} />
+          </FormField>
+          <FormField label="Go-live Previsto">
+            <input className="input" type="date" value={pForm.data_golive_prevista ?? ''} onChange={spev('data_golive_prevista')} />
+          </FormField>
+          <FormField label="Go-live Real">
+            <input className="input" type="date" value={pForm.data_golive_real ?? ''} onChange={spev('data_golive_real')} />
+          </FormField>
         </div>
-      </Section>
+      </SectionCard>
 
-      {/* Alertas */}
-      <Section title="Alertas para o Suporte">
-        <textarea className="input min-h-[80px] resize-y" placeholder="Informe alertas críticos que o suporte precisa saber…"
-          value={projectForm.alertas_suporte ?? ''} onChange={spev('alertas_suporte')} />
-      </Section>
+      {/* ── 5. IDs Externos ──────────────────────────────────────────── */}
+      <SectionCard
+        color="sky"
+        icon={Link2}
+        title="IDs Externos"
+        subtitle="Integrações com Movidesk e Sense Data"
+        complete={isIdsComplete}
+      >
+        <div className="grid grid-cols-2 gap-3">
+          <FormField label="Movidesk ID">
+            <input className="input" value={pForm.movidesk_id ?? ''} onChange={spev('movidesk_id')} />
+          </FormField>
+          <FormField label="Sense Data ID">
+            <input className="input" value={pForm.sensedata_id ?? ''} onChange={spev('sensedata_id')} />
+          </FormField>
+        </div>
+      </SectionCard>
 
-      {/* Observações */}
-      <Section title="Observações Gerais">
-        <textarea className="input min-h-[80px] resize-y" placeholder="Observações gerais sobre o projeto…"
-          value={projectForm.obs_geral ?? ''} onChange={spev('obs_geral')} />
-      </Section>
+      {/* ── 6. Licenças ───────────────────────────────────────────────── */}
+      <SectionCard
+        color="amber"
+        icon={Star}
+        title="Licenças"
+        subtitle="Quantidades contratadas por produto"
+        complete={null}
+      >
+        <div className="grid grid-cols-2 gap-3">
+          <FormField label="Mídia+">
+            <input className="input" type="number" min="0" value={pForm.licencas_midiaplus ?? ''} onChange={spev('licencas_midiaplus')} />
+          </FormField>
+          <FormField label="AdSim">
+            <input className="input" type="number" min="0" value={pForm.licencas_adsim ?? ''} onChange={spev('licencas_adsim')} />
+          </FormField>
+          <FormField label="AdAnalytics">
+            <input className="input" type="number" min="0" value={pForm.licencas_adanalytics ?? ''} onChange={spev('licencas_adanalytics')} />
+          </FormField>
+          <FormField label="AdChecking">
+            <input className="input" type="number" min="0" value={pForm.licencas_adchecking ?? ''} onChange={spev('licencas_adchecking')} />
+          </FormField>
+        </div>
+      </SectionCard>
 
-      {/* Contatos */}
-      {project?.id && <ContactsTable projectId={project.id} contacts={contacts} />}
+      {/* ── 7. Alertas ───────────────────────────────────────────────── */}
+      <SectionCard
+        color="red"
+        icon={AlertTriangle}
+        title="Alertas"
+        subtitle="Visível para toda a equipe de suporte"
+        complete={null}
+      >
+        <FormField label="Alertas de Suporte">
+          <textarea
+            className="input resize-none"
+            rows={3}
+            value={pForm.alertas_suporte ?? ''}
+            onChange={spev('alertas_suporte')}
+            placeholder="Descreva situações especiais de atendimento…"
+          />
+        </FormField>
+        <div className="mt-3">
+          <FormField label="Observações Gerais">
+            <textarea
+              className="input resize-none"
+              rows={3}
+              value={pForm.obs_geral ?? ''}
+              onChange={spev('obs_geral')}
+              placeholder="Contexto adicional sobre o cliente…"
+            />
+          </FormField>
+        </div>
+      </SectionCard>
+
+      {/* ── 8. Contatos ──────────────────────────────────────────────── */}
+      <SectionCard
+        color="orange"
+        icon={Phone}
+        title="Contatos"
+        subtitle={
+          contacts.length === 0
+            ? 'Nenhum contato cadastrado'
+            : `${contacts.length} contato${contacts.length > 1 ? 's' : ''} cadastrado${contacts.length > 1 ? 's' : ''}${sponsors.length > 0 ? ` · ${sponsors.length} sponsor` : ''}`
+        }
+        complete={isContactsComp ? true : false}
+      >
+        {/* Lista de contatos */}
+        {contacts.length > 0 && (
+          <div className="space-y-2 mb-3">
+            {contacts.map((c) => (
+              <div
+                key={c.id}
+                className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-100 group"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  {c.is_sponsor && (
+                    <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0" />
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-slate-800 truncate">{c.nome}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {c.cargo && (
+                        <span className="text-xs text-slate-400 truncate">{c.cargo}</span>
+                      )}
+                      {c.telefone && (
+                        <span className="text-xs text-slate-400 truncate">· {c.telefone}</span>
+                      )}
+                      {c.email && (
+                        <span className="text-xs text-slate-400 truncate">· {c.email}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => openEdit(c)}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                    title="Editar contato"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => setDeleteTarget(c)}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    title="Excluir contato"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Botão de novo contato */}
+        <button
+          onClick={openNew}
+          className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl border-2 border-dashed border-slate-200 text-sm text-slate-400 hover:border-orange-300 hover:text-orange-500 hover:bg-orange-50 transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          Adicionar contato
+        </button>
+      </SectionCard>
+
+      {/* ── Barra de salvar (sticky) ───────────────────────────────────── */}
+      {dirty && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-end gap-3 px-6 py-3 bg-white border-t border-slate-200 shadow-lg">
+          <span className="text-xs text-slate-400 mr-auto">Você tem alterações não salvas</span>
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="btn-secondary text-sm"
+            disabled={updateClient.isPending || updateProject.isPending}
+          >
+            Descartar
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={updateClient.isPending || updateProject.isPending}
+            className="btn-primary text-sm flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <Check className="w-4 h-4" />
+            {(updateClient.isPending || updateProject.isPending) ? 'Salvando…' : 'Salvar alterações'}
+          </button>
+        </div>
+      )}
+
+      {/* ── Popover de contato ─────────────────────────────────────────── */}
+      <ContactPopover
+        open={contactPopover.open}
+        initial={contactPopover.contact}
+        projectId={project?.id}
+        onClose={closePopover}
+      />
+
+      {/* ── Diálogo de confirmação de exclusão ─────────────────────────── */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Excluir contato"
+        description={`Tem certeza que deseja excluir "${deleteTarget?.nome}"? Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir"
+        onConfirm={() => {
+          deleteContact.mutate({ id: deleteTarget.id, project_id: project?.id })
+          setDeleteTarget(null)
+        }}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }
