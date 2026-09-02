@@ -9,14 +9,14 @@ import EmissorasTab from './tabs/EmissorasTab'
 import ComingSoon from '@/components/shared/ComingSoon'
 import ConfigTecnicaTab from './tabs/ConfigTecnicaTab'
 import UsuariosClienteTab from './tabs/UsuariosClienteTab'
+import AlertasTab from './tabs/AlertasTab'
 
 const TABS = [
-  { id: 'projeto',    label: 'Projeto'       },
-  { id: 'emissoras',  label: 'Emissoras'     },
-  { id: 'config',     label: 'Configurações' },
-  { id: 'usuarios',   label: 'Usuários'      },
-  { id: 'pendencias', label: 'Pendências'    },
-  { id: 'checklist',  label: 'Checklist'     },
+  { id: 'projeto',   label: 'Projeto'        },
+  { id: 'emissoras', label: 'Emissoras'      },
+  { id: 'config',    label: 'Configurações'  },
+  { id: 'usuarios',  label: 'Usuários'       },
+  { id: 'alertas',   label: 'Alertas'        },
 ]
 
 export default function ClientPage() {
@@ -102,7 +102,12 @@ function ClientPageInner() {
             ? <div className="flex justify-center py-12"><Spinner /></div>
             : <UsuariosClienteTab project={project} />
         )}
-        {activeTab !== 'projeto' && activeTab !== 'emissoras' && activeTab !== 'config' && activeTab !== 'usuarios' && (
+        {activeTab === 'alertas' && (
+          loadingProject
+            ? <div className="flex justify-center py-12"><Spinner /></div>
+            : <AlertasTab project={project} />
+        )}
+        {activeTab !== 'projeto' && activeTab !== 'emissoras' && activeTab !== 'config' && activeTab !== 'usuarios' && activeTab !== 'alertas' && (
           <ComingSoon title={TABS.find((t) => t.id === activeTab)?.label} />
         )}
       </div>
