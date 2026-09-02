@@ -9,7 +9,7 @@ export function useClientUsers(projectId) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('client_users')
-        .select('*')
+        .select('id, project_id, nome, email, perfil, login, sistemas, ativo, created_at')
         .eq('project_id', projectId)
         .order('created_at')
       if (error) throw error
@@ -23,14 +23,30 @@ export function useSaveClientUsers(projectId) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ toUpsert, toDelete }) => {
+      // 1. Deleta os removidos
       if (toDelete.length) {
-        const { error } = await supabase.from('client_users').delete().in('id', toDelete)
-        if (error) throw error
-      }
-      if (toUpsert.length) {
         const { error } = await supabase
           .from('client_users')
-          .upsert(toUpsert.map(u => ({ ...u, project_id: projectId })))
+          .delete()
+          .in('id', toDelete)
+        if (error) throw error
+      }
+
+      // 2. Upsert com payload limpo e onConflict explícito
+      if (toUpsert.length) {
+        const payload = toUpsert.map(u => ({
+          id:         u.id,
+          project_id: projectId,
+          nome:       u.nome   ?? '',
+          email:      u.email  ?? '',
+          perfil:     u.perfil ?? '',
+          login:      u.login  ?? '',
+          sistemas:   Array.isArray(u.sistemas) ? u.sistemas : [],
+          ativo:      u.ativo  ?? true,
+        }))
+        const { error } = await supabase
+          .from('client_users')
+          .upsert(payload, { onConflict: 'id', ignoreDuplicates: false })
         if (error) throw error
       }
     },
