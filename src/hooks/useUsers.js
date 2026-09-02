@@ -9,27 +9,24 @@ export function useUsers() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, full_name, role, ativo, created_at')
-        .order('full_name')
+        .select('id, email, nome, role, ativo, created_at')
+        .order('nome')
       if (error) throw error
       return data ?? []
     },
   })
 }
 
-// Cria um perfil pré-cadastrado (sem UUID de Auth ainda)
-// O usuário recebe o link de reset de senha para ativar a conta
+// Pré-cria perfil e envia e-mail de convite com link para definir senha
 export function useCreateUser() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async ({ email, full_name, role }) => {
-      // Pré-cria o perfil com UUID temporário
+    mutationFn: async ({ email, nome, role }) => {
       const tempId = crypto.randomUUID()
       const { error: pe } = await supabase.from('profiles').insert({
-        id: tempId, email, full_name, role, ativo: true,
+        id: tempId, email, nome, role, ativo: true,
       })
       if (pe) throw pe
-      // Envia "reset password" (funciona como convite se o email não existe ainda no Auth)
       await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       })

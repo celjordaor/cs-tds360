@@ -17,35 +17,35 @@ import Spinner from '@/components/ui/Spinner'
 
 const schema = z.object({
   razao_social: z.string().min(2, 'Obrigatório'),
-  nome_fantasia: z.string().optional(),
+  fantasia: z.string().optional(),
   cnpj: z.string().optional(),
   cep: z.string().optional(),
   cidade: z.string().optional(),
-  uf: z.string().max(2).optional(),
-  segmento: z.array(z.string()).optional(),
+  estado: z.string().max(2).optional(),
+  segmentos: z.array(z.string()).optional(),
   sistemas_contratados: z.array(z.string()).min(1, 'Selecione ao menos um sistema'),
   responsavel_cs_id: z.string().min(1, 'Selecione o analista responsável'),
 })
 
 export default function NewClientModal({ open, onClose, onCreated }) {
   const { data: sistemas = [] } = useConfigOptionsActive('sistema')
-  const { data: segmentos = [] } = useConfigOptionsActive('segmento')
+  const { data: segmentosOpts = [] } = useConfigOptionsActive('segmento')
   const { data: profiles = [] } = useProfilesCS()
   const create = useCreateClient()
   const { toast } = useToast()
 
   const { register, handleSubmit, control, setValue, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { segmento: [], sistemas_contratados: [] },
+    defaultValues: { segmentos: [], sistemas_contratados: [] },
   })
 
   async function onSubmit(values) {
     try {
-      const { segmento, sistemas_contratados, responsavel_cs_id, ...clientData } = values
-      // Remove undefined/empty optional fields so Supabase doesn't reject them
+      const { segmentos, sistemas_contratados, responsavel_cs_id, cep: _cep, ...clientData } = values
+      // Strip undefined/empty — cep is only for autofill, not stored on clients
       const cleanClient = Object.fromEntries(
-        Object.entries({ ...clientData, segmento, status: 'implantacao' })
-          .filter(([, v]) => v !== undefined && v !== '')
+        Object.entries({ ...clientData, segmentos })
+          .filter(([, v]) => v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0))
       )
       const result = await create.mutateAsync({
         client: cleanClient,
@@ -77,8 +77,8 @@ export default function NewClientModal({ open, onClose, onCreated }) {
           <FormField label="Razão Social" required error={errors.razao_social?.message} className="col-span-2">
             <input className="input" {...register('razao_social')} placeholder="Nome da empresa" />
           </FormField>
-          <FormField label="Nome Fantasia" error={errors.nome_fantasia?.message}>
-            <input className="input" {...register('nome_fantasia')} placeholder="Nome fantasia" />
+          <FormField label="Nome Fantasia" error={errors.fantasia?.message}>
+            <input className="input" {...register('fantasia')} placeholder="Nome fantasia" />
           </FormField>
           <FormField label="CNPJ" error={errors.cnpj?.message}>
             <Controller name="cnpj" control={control}
@@ -88,18 +88,18 @@ export default function NewClientModal({ open, onClose, onCreated }) {
             <Controller name="cep" control={control}
               render={({ field }) => (
                 <CEPInput value={field.value ?? ''} onChange={field.onChange}
-                  onAddress={({ localidade, uf }) => { setValue('cidade', localidade); setValue('uf', uf) }} />
+                  onAddress={({ localidade, uf }) => { setValue('cidade', localidade); setValue('estado', uf) }} />
               )} />
           </FormField>
           <FormField label="Cidade / UF" error={errors.cidade?.message}>
             <div className="flex gap-2">
               <input className="input flex-1" {...register('cidade')} placeholder="Cidade" />
-              <input className="input w-16 uppercase" {...register('uf')} placeholder="UF" maxLength={2} />
+              <input className="input w-16 uppercase" {...register('estado')} placeholder="UF" maxLength={2} />
             </div>
           </FormField>
-          <FormField label="Segmento" error={errors.segmento?.message} className="col-span-2">
-            <Controller name="segmento" control={control}
-              render={({ field }) => <MultiSelect options={segmentos} value={field.value ?? []} onChange={field.onChange} placeholder="Selecionar segmentos…" />} />
+          <FormField label="Segmento" error={errors.segmentos?.message} className="col-span-2">
+            <Controller name="segmentos" control={control}
+              render={({ field }) => <MultiSelect options={segmentosOpts} value={field.value ?? []} onChange={field.onChange} placeholder="Selecionar segmentos…" />} />
           </FormField>
           <FormField label="Sistemas Contratados" required error={errors.sistemas_contratados?.message} className="col-span-2">
             <Controller name="sistemas_contratados" control={control}

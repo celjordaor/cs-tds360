@@ -21,7 +21,7 @@ const ROLE_VARIANT = {
   super_admin: 'red',
 }
 
-const EMPTY_FORM = { email: '', full_name: '', role: 'cs' }
+const EMPTY_FORM = { email: '', nome: '', role: 'cs' }
 
 export default function UsersTab() {
   const { data: users = [], isLoading } = useUsers()
@@ -36,7 +36,7 @@ export default function UsersTab() {
   function validate() {
     const e = {}
     if (!form.email.trim())     e.email     = 'E-mail obrigatório'
-    if (!form.full_name.trim()) e.full_name = 'Nome obrigatório'
+    if (!form.nome.trim()) e.nome = 'Nome obrigatório'
     if (!form.role)             e.role      = 'Perfil obrigatório'
     setErrors(e)
     return Object.keys(e).length === 0
@@ -99,7 +99,7 @@ export default function UsersTab() {
                 </tr>
               ) : users.map(u => (
                 <tr key={u.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-slate-800">{u.full_name || '—'}</td>
+                  <td className="px-4 py-3 font-medium text-slate-800">{u.nome || '—'}</td>
                   <td className="px-4 py-3 text-slate-600">{u.email}</td>
                   <td className="px-4 py-3">
                     <Badge variant={ROLE_VARIANT[u.role] || 'slate'}>
@@ -167,11 +167,11 @@ export default function UsersTab() {
                 {errors._api}
               </div>
             )}
-            <FormField label="Nome completo" error={errors.full_name} required>
+            <FormField label="Nome completo" error={errors.nome} required>
               <input
                 type="text"
-                value={form.full_name}
-                onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))}
+                value={form.nome}
+                onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
                 placeholder="João Silva"
                 className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
