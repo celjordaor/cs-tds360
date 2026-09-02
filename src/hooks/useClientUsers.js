@@ -23,30 +23,53 @@ export function useSaveClientUsers(projectId) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ toInsert, toUpdate, toDelete }) => {
+
       // 1. Remove excluídos
       if (toDelete?.length) {
         const { error } = await supabase
-          .from('client_users')
-          .delete()
-          .in('id', toDelete)
+          .from('client_users').delete().in('id', toDelete)
         if (error) throw error
       }
 
-      // 2. Insere e atualiza via RPC — evita o bug columns+TEXT[] do PostgREST
-      //    supabase-js v2 adiciona ?columns= mesmo no .insert(), quebrando TEXT[].
-      //    Chamadas RPC vão para /rpc/... sem esse parâmetro.
-      const toSave = [...(toInsert ?? []), ...(toUpdate ?? [])]
-      for (const u of toSave) {
-        const { error } = await supabase.rpc('upsert_client_user', {
-          p_id:         u.id,
-          p_project_id: projectId,
-          p_nome:       u.nome   ?? '',
-          p_email:      u.email  ?? '',
-          p_perfil:     u.perfil ?? '',
-          p_login:      u.login  ?? '',
-          p_sistemas:   Array.isArray(u.sistemas) ? u.sistemas : [],
-          p_ativo:      u.ativo  ?? true,
-        })
+      // 2. Insere novos SEM sistemas (INSERT/POST adiciona ?columns= e quebra TEXT[])
+      //    Depois faz UPDATE do sistemas separado (PATCH não adiciona ?columns=)
+      if (toInsert?.length) {
+        const base = toInsert.map(u => ({
+          id:         u.id,
+          project_id: projectId,
+          nome:       u.nome   ?? '',
+          email:      u.email  ?? '',
+          perfil:     u.perfil ?? '',
+          login:      u.login  ?? '',
+          ativo:      u.ativo  ?? true,
+          // sistemas omitido aqui — será atualizado abaixo
+        }))
+        const { error } = await supabase.from('client_users').insert(base)
+        if (error) throw error
+
+        // Agora atualiza sistemas via UPDATE (sem ?columns=)
+        for (const u of toInsert) {
+          const { error: e2 } = await supabase
+            .from('client_users')
+            .update({ sistemas: Array.isArray(u.sistemas) ? u.sistemas : [] })
+            .eq('id', u.id)
+          if (e2) throw e2
+        }
+      }
+
+      // 3. Atualiza existentes (UPDATE/PATCH não tem o bug de ?columns=)
+      for (const u of (toUpdate ?? [])) {
+        const { error } = await supabase
+          .from('client_users')
+          .update({
+            nome:     u.nome   ?? '',
+            email:    u.email  ?? '',
+            perfil:   u.perfil ?? '',
+            login:    u.login  ?? '',
+            sistemas: Array.isArray(u.sistemas) ? u.sistemas : [],
+            ativo:    u.ativo  ?? true,
+          })
+          .eq('id', u.id)
         if (error) throw error
       }
     },
