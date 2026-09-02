@@ -47,8 +47,8 @@ export default function NewClientModal({ open, onClose, onCreated }) {
           .filter(([, v]) => v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0))
       )
       const result = await create.mutateAsync({
-        client: cleanClient,
-        project: { sistemas_contratados, responsavel_cs_id, status: 'em_andamento' },
+        client: { ...cleanClient, status: 'ativo' },
+        project: { sistemas_contratados, responsavel_cs_id },
       })
       toast({ type: 'success', message: 'Cliente criado com sucesso!' })
       onCreated?.(result)

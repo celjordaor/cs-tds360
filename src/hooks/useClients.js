@@ -80,8 +80,12 @@ export function useCreateClient() {
       const { data: c, error: ce } = await supabase.from('clients').insert(client).select().single()
       if (ce) throw ce
 
-      // 2. Separa sistemas_contratados (TEXT[]) para evitar bug ?columns= do PostgREST
-      const { sistemas_contratados, ...projectBase } = project
+      // 2. Separa sistemas_contratados (TEXT[]) e filtra colunas válidas de projects
+      //    evitando bug ?columns= do PostgREST e colunas inexistentes na tabela
+      const { sistemas_contratados, ...projectRaw } = project
+      const projectBase = Object.fromEntries(
+        Object.entries(projectRaw).filter(([k]) => PROJECT_COLS.has(k))
+      )
       const { data: p, error: pe } = await supabase
         .from('projects')
         .insert({ ...projectBase, client_id: c.id })
