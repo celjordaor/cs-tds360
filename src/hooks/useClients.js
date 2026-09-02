@@ -9,7 +9,7 @@ export function useClients(filters = {}) {
     queryFn: async () => {
       let q = supabase
         .from('clients')
-        .select(`*, projects(id, status, responsavel_cs_id, apoio_cs_id, onboarding_pct, sistemas_contratados)`)
+        .select(`*, projects(id, responsavel_cs_id, apoio_cs_id, onboarding_pct, sistemas_contratados)`)
         .order('razao_social')
 
       if (filters.search) q = q.ilike('razao_social', `%${filters.search}%`)
