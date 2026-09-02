@@ -23,7 +23,6 @@ export function useEmissoras(projectId) {
         .eq('project_id', projectId)
         .order('ordem')
         .order('ordem', { foreignTable: 'veiculos' })
-        .order('ordem', { foreignTable: 'veiculos.pracas' })
       if (error) throw error
       return data ?? []
     },
