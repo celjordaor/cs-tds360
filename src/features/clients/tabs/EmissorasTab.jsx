@@ -1,18 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { ChevronDown, ChevronRight, Plus, X, Radio, Save, Loader2 } from 'lucide-react'
 import { useEmissoras, useSaveEmissoras } from '@/hooks/useEmissoras'
+import { useConfigOptionsActive } from '@/hooks/useConfigOptions'
+import CNPJInput from '@/components/form/CNPJInput'
 import { useToast } from '@/components/shared/ToastContext'
 import Spinner from '@/components/ui/Spinner'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
-
-const TIPO_OPTS = [
-  { value: 'tv',      label: 'TV'      },
-  { value: 'radio',   label: 'Rádio'   },
-  { value: 'digital', label: 'Digital' },
-  { value: 'jornal',  label: 'Jornal'  },
-  { value: 'ooh',     label: 'OOH'     },
-]
 
 function newEmissora(projectId, ordem) {
   return {
@@ -207,6 +201,7 @@ function EmissoraCard({
   onToggleVeiculo, onAddVeiculo, onUpdateVeiculo, onRemoveVeiculo,
   onAddPraca, onUpdatePraca, onRemovePraca,
   hasAdsim, hasMidiaplus,
+  segmentoOpts,
 }) {
   const header = emissora.fantasia || '(nova emissora)'
 
@@ -229,7 +224,7 @@ function EmissoraCard({
         </span>
         {emissora.tipo && (
           <span className="text-xs bg-sky-50 text-sky-700 border border-sky-200 rounded-md px-2 py-0.5 uppercase font-semibold tracking-wide">
-            {TIPO_OPTS.find(t => t.value === emissora.tipo)?.label ?? emissora.tipo}
+            {(segmentoOpts ?? []).find(t => t.value === emissora.tipo)?.label ?? emissora.tipo}
           </span>
         )}
         <button
@@ -270,11 +265,9 @@ function EmissoraCard({
               </div>
               <div>
                 <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">CNPJ</label>
-                <input
-                  type="text"
+                <CNPJInput
                   value={emissora.cnpj ?? ''}
-                  onChange={e => onUpdate('cnpj', e.target.value)}
-                  placeholder="00.000.000/0001-00"
+                  onChange={val => onUpdate('cnpj', val)}
                   className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                 />
               </div>
@@ -286,7 +279,7 @@ function EmissoraCard({
                   className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                 >
                   <option value="">— Selecione —</option>
-                  {TIPO_OPTS.map(o => (
+                  {(segmentoOpts ?? []).map(o => (
                     <option key={o.value} value={o.value}>{o.label}</option>
                   ))}
                 </select>
@@ -398,6 +391,7 @@ export default function EmissorasTab({ project }) {
   const [openVeiculos, setOpenVeiculos]   = useState({})
 
   // Sistemas contratados condicionam seções de configuração por sistema
+  const { data: segmentoOpts = [] } = useConfigOptionsActive('segmento')
   const sistemas       = project?.sistemas_contratados ?? []
   const hasAdsim       = sistemas.includes('adsim')
   const hasMidiaplus   = sistemas.includes('midiaplus')
@@ -599,6 +593,7 @@ export default function EmissorasTab({ project }) {
               onRemovePraca={removePraca}
               hasAdsim={hasAdsim}
               hasMidiaplus={hasMidiaplus}
+              segmentoOpts={segmentoOpts}
             />
           ))}
         </div>
