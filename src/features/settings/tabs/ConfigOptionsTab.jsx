@@ -9,9 +9,11 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import Spinner from '@/components/ui/Spinner'
 
 const CATEGORIES = [
-  { key: 'sistema',        label: 'Sistemas Contratados',  hint: 'Sistemas disponíveis para seleção nos projetos'   },
-  { key: 'segmento',       label: 'Segmentos de Mercado',  hint: 'Segmentos que uma emissora/empresa pode atuar'    },
-  { key: 'status_projeto', label: 'Status do Projeto',     hint: 'Status do ciclo de vida dos projetos' },
+  { key: 'sistema',          label: 'Sistemas Contratados',  hint: 'Sistemas disponíveis para seleção nos projetos'                 },
+  { key: 'segmento',         label: 'Segmentos de Mercado',  hint: 'Segmentos que uma emissora/empresa pode atuar'                  },
+  { key: 'status_projeto',   label: 'Status do Projeto',     hint: 'Status do ciclo de vida dos projetos'                          },
+  { key: 'modulo_adsim',     label: 'Módulos Adsim',         hint: 'Módulos do Adsim exibidos na aba Configurações Técnicas'        },
+  { key: 'modulo_midiaplus', label: 'Módulos Mídia+',        hint: 'Módulos do Mídia+ exibidos na aba Configurações Técnicas'       },
 ]
 
 // Gera slug interno a partir do label — nunca muda após a criação
