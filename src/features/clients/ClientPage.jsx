@@ -7,6 +7,8 @@ import ClientPageHeader from './components/ClientPageHeader'
 import ProjectTab from './tabs/ProjectTab'
 import EmissorasTab from './tabs/EmissorasTab'
 import ComingSoon from '@/components/shared/ComingSoon'
+import ConfigTecnicaTab from './tabs/ConfigTecnicaTab'
+import UsuariosClienteTab from './tabs/UsuariosClienteTab'
 
 const TABS = [
   { id: 'projeto',    label: 'Projeto'       },
@@ -90,7 +92,17 @@ function ClientPageInner() {
             ? <div className="flex justify-center py-12"><Spinner /></div>
             : <EmissorasTab project={project} />
         )}
-        {activeTab !== 'projeto' && activeTab !== 'emissoras' && (
+        {activeTab === 'config' && (
+          loadingProject
+            ? <div className="flex justify-center py-12"><Spinner /></div>
+            : <ConfigTecnicaTab project={project} />
+        )}
+        {activeTab === 'usuarios' && (
+          loadingProject
+            ? <div className="flex justify-center py-12"><Spinner /></div>
+            : <UsuariosClienteTab project={project} />
+        )}
+        {activeTab !== 'projeto' && activeTab !== 'emissoras' && activeTab !== 'config' && activeTab !== 'usuarios' && (
           <ComingSoon title={TABS.find((t) => t.id === activeTab)?.label} />
         )}
       </div>
