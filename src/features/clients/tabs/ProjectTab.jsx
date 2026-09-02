@@ -3,6 +3,7 @@ import {
   User, LayoutGrid, Users, Calendar, Link2,
   Star, AlertTriangle, Phone, Plus, Pencil, Trash2, Check,
 } from 'lucide-react'
+import SectionCard from '@/components/ui/SectionCard'
 import { useUpdateClient, useUpdateProject, useContacts, useDeleteContact } from '@/hooks/useClients'
 import { useConfigOptionsActive } from '@/hooks/useConfigOptions'
 import { useProfilesCS } from '@/hooks/useProfiles'
@@ -14,70 +15,6 @@ import SearchSelect from '@/components/form/SearchSelect'
 import Toggle from '@/components/ui/Toggle'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
 import ContactPopover from '../components/ContactPopover'
-
-// ─── Paleta de cores por seção ───────────────────────────────────────────────
-
-const GRAD = {
-  orange: 'linear-gradient(135deg, #FB923C, #F97316)',
-  violet: 'linear-gradient(135deg, #A78BFA, #7C3AED)',
-  blue:   'linear-gradient(135deg, #60A5FA, #3B82F6)',
-  green:  'linear-gradient(135deg, #34D399, #059669)',
-  sky:    'linear-gradient(135deg, #38BDF8, #0EA5E9)',
-  amber:  'linear-gradient(135deg, #FCD34D, #D97706)',
-  red:    'linear-gradient(135deg, #F87171, #DC2626)',
-}
-
-const BORDER = {
-  orange: '#F97316',
-  violet: '#7C3AED',
-  blue:   '#3B82F6',
-  green:  '#059669',
-  sky:    '#0EA5E9',
-  amber:  '#D97706',
-  red:    '#EF4444',
-}
-
-// ─── SectionCard ─────────────────────────────────────────────────────────────
-
-function SectionCard({ color, icon: Icon, title, subtitle, complete, children }) {
-  const borderColor = BORDER[color] ?? '#94A3B8'
-  const gradient    = GRAD[color]  ?? 'linear-gradient(135deg,#94A3B8,#64748B)'
-
-  return (
-    <div
-      className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden"
-      style={{ borderLeftColor: borderColor, borderLeftWidth: '3.5px' }}
-    >
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-50">
-        <div className="flex items-center gap-3">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm"
-            style={{ background: gradient }}
-          >
-            <Icon className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-slate-800 leading-tight">{title}</p>
-            {subtitle && (
-              <p className="text-xs text-slate-400 mt-0.5 leading-tight">{subtitle}</p>
-            )}
-          </div>
-        </div>
-
-        {complete === true && (
-          <span className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">
-            <Check className="w-3 h-3 text-emerald-600" strokeWidth={2.5} />
-          </span>
-        )}
-        {complete === false && (
-          <span className="w-5 h-5 rounded-full border-2 border-slate-300" />
-        )}
-      </div>
-
-      <div className="p-4">{children}</div>
-    </div>
-  )
-}
 
 // ─── ProjectTab ───────────────────────────────────────────────────────────────
 
