@@ -23,6 +23,8 @@ function newEmissora(projectId, ordem) {
     cnpj: '',
     tipo: null,
     cod_midiaplus: '',
+    id_emissora_adsim: '',
+    grupo_empresa_adsim: '',
     ordem,
     ativo: true,
     veiculos: [],
@@ -204,6 +206,7 @@ function EmissoraCard({
   onToggle, onUpdate, onRemove,
   onToggleVeiculo, onAddVeiculo, onUpdateVeiculo, onRemoveVeiculo,
   onAddPraca, onUpdatePraca, onRemovePraca,
+  hasAdsim, hasMidiaplus,
 }) {
   const header = emissora.fantasia || '(nova emissora)'
 
@@ -291,23 +294,57 @@ function EmissoraCard({
             </div>
           </div>
 
-          {/* Configuração Mídia+ */}
-          <div className="border border-blue-100 rounded-xl p-4 bg-blue-50/50">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-2 h-2 rounded-full bg-blue-500" />
-              <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest">Configuração Mídia+</p>
+          {/* Configuração Adsim — condicional ao sistema contratado */}
+          {hasAdsim && (
+            <div className="border border-violet-100 rounded-xl p-4 bg-violet-50/50">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-2 h-2 rounded-full bg-violet-500" />
+                <p className="text-xs font-semibold text-violet-600 uppercase tracking-widest">Configuração Adsim</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3 max-w-lg">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">ID Emissora Adsim</label>
+                  <input
+                    type="text"
+                    value={emissora.id_emissora_adsim ?? ''}
+                    onChange={e => onUpdate('id_emissora_adsim', e.target.value)}
+                    placeholder="ID interno Adsim"
+                    className="w-full px-3 py-2 text-sm border border-violet-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Grupo Empresa Adsim</label>
+                  <input
+                    type="text"
+                    value={emissora.grupo_empresa_adsim ?? ''}
+                    onChange={e => onUpdate('grupo_empresa_adsim', e.target.value)}
+                    placeholder="Grupo no Adsim"
+                    className="w-full px-3 py-2 text-sm border border-violet-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent"
+                  />
+                </div>
+              </div>
             </div>
-            <div className="w-48">
-              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Cód. Emissora Mídia+</label>
-              <input
-                type="text"
-                value={emissora.cod_midiaplus ?? ''}
-                onChange={e => onUpdate('cod_midiaplus', e.target.value)}
-                placeholder="001"
-                className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-              />
+          )}
+
+          {/* Configuração Mídia+ — condicional ao sistema contratado */}
+          {hasMidiaplus && (
+            <div className="border border-blue-100 rounded-xl p-4 bg-blue-50/50">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-2 h-2 rounded-full bg-blue-500" />
+                <p className="text-xs font-semibold text-blue-600 uppercase tracking-widest">Configuração Mídia+</p>
+              </div>
+              <div className="w-48">
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Cód. Emissora Mídia+</label>
+                <input
+                  type="text"
+                  value={emissora.cod_midiaplus ?? ''}
+                  onChange={e => onUpdate('cod_midiaplus', e.target.value)}
+                  placeholder="Código emissora"
+                  className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Veículos */}
           <div>
@@ -359,6 +396,11 @@ export default function EmissorasTab({ project }) {
   const [deletedIds, setDeletedIds] = useState({ emissoras: [], veiculos: [], pracas: [] })
   const [openEmissoras, setOpenEmissoras] = useState({})
   const [openVeiculos, setOpenVeiculos]   = useState({})
+
+  // Sistemas contratados condicionam seções de configuração por sistema
+  const sistemas       = project?.sistemas_contratados ?? []
+  const hasAdsim       = sistemas.includes('adsim')
+  const hasMidiaplus   = sistemas.includes('midiaplus')
 
   // Sincroniza estado local quando dados do banco chegam / são invalidados após save
   const dbStrRef = useRef(null)
@@ -555,6 +597,8 @@ export default function EmissorasTab({ project }) {
               onAddPraca={addPraca}
               onUpdatePraca={updatePraca}
               onRemovePraca={removePraca}
+              hasAdsim={hasAdsim}
+              hasMidiaplus={hasMidiaplus}
             />
           ))}
         </div>
