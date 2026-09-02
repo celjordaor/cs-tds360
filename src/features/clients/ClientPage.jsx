@@ -5,6 +5,7 @@ import AppLayout from '@/components/layout/AppLayout'
 import Spinner from '@/components/ui/Spinner'
 import ClientPageHeader from './components/ClientPageHeader'
 import ProjectTab from './tabs/ProjectTab'
+import EmissorasTab from './tabs/EmissorasTab'
 import ComingSoon from '@/components/shared/ComingSoon'
 
 const TABS = [
@@ -84,7 +85,12 @@ function ClientPageInner() {
             ? <div className="flex justify-center py-12"><Spinner /></div>
             : <ProjectTab client={client} project={project} />
         )}
-        {activeTab !== 'projeto' && (
+        {activeTab === 'emissoras' && (
+          loadingProject
+            ? <div className="flex justify-center py-12"><Spinner /></div>
+            : <EmissorasTab project={project} />
+        )}
+        {activeTab !== 'projeto' && activeTab !== 'emissoras' && (
           <ComingSoon title={TABS.find((t) => t.id === activeTab)?.label} />
         )}
       </div>
