@@ -3,6 +3,7 @@ import { Users, Plus, X, Save, Loader2 } from 'lucide-react'
 import { useClientUsers, useSaveClientUsers } from '@/hooks/useClientUsers'
 import { useToast } from '@/components/shared/ToastContext'
 import Spinner from '@/components/ui/Spinner'
+import SectionCard from '@/components/ui/SectionCard'
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
@@ -146,7 +147,6 @@ export default function UsuariosClienteTab({ project }) {
   const [users,      setUsers]      = useState([])
   const [deletedIds, setDeletedIds] = useState([])
 
-  // Sincroniza quando dados chegam ou são invalidados após save
   const dbStrRef = useRef(null)
   useEffect(() => {
     const str = JSON.stringify(dbUsers)
@@ -206,63 +206,66 @@ export default function UsuariosClienteTab({ project }) {
   }
 
   const ativos = users.filter(u => u.ativo).length
+  const subtitle = users.length === 0
+    ? 'Nenhum usuário cadastrado'
+    : `${users.length} usuário${users.length !== 1 ? 's' : ''} · ${ativos} ativo${ativos !== 1 ? 's' : ''}`
+
+  const actionBtn = (
+    <button
+      onClick={addUser}
+      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors shadow-sm"
+    >
+      <Plus className="w-3.5 h-3.5" />
+      Novo Usuário
+    </button>
+  )
 
   return (
     <div className="pb-28">
-      {/* Cabeçalho */}
-      <div className="flex items-center justify-between mb-5">
-        <div>
-          <h2 className="text-sm font-bold text-slate-800">Usuários do Cliente</h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            {users.length === 0
-              ? 'Nenhum usuário cadastrado.'
-              : `${users.length} usuário${users.length !== 1 ? 's' : ''} · ${ativos} ativo${ativos !== 1 ? 's' : ''}`}
-          </p>
-        </div>
-        <button
-          onClick={addUser}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors shadow-sm"
-        >
-          <Plus className="w-4 h-4" />
-          Novo Usuário
-        </button>
-      </div>
-
-      {/* Tabela / estado vazio */}
-      {users.length === 0 ? (
-        <div className="border-2 border-dashed border-slate-200 rounded-xl p-12 text-center">
-          <Users className="w-8 h-8 text-slate-300 mx-auto mb-3" />
-          <p className="text-sm text-slate-400 mb-1">Nenhum usuário cadastrado</p>
-          <p className="text-xs text-slate-300">Clique em "Novo Usuário" para começar</p>
-        </div>
-      ) : (
-        <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-200">
-                <th className="text-left px-3 py-2.5 font-semibold text-slate-500 uppercase tracking-wide min-w-36">Nome</th>
-                <th className="text-left px-2 py-2.5 font-semibold text-slate-500 uppercase tracking-wide min-w-44">E-mail</th>
-                <th className="text-left px-2 py-2.5 font-semibold text-slate-500 uppercase tracking-wide min-w-32">Perfil de Acesso</th>
-                <th className="text-left px-2 py-2.5 font-semibold text-slate-500 uppercase tracking-wide min-w-28">Login</th>
-                <th className="text-left px-2 py-2.5 font-semibold text-slate-500 uppercase tracking-wide min-w-40">Sistemas</th>
-                <th className="text-center px-2 py-2.5 font-semibold text-slate-500 uppercase tracking-wide w-16">Ativo</th>
-                <th className="w-8" />
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-slate-50">
-              {users.map(u => (
-                <UserRow
-                  key={u.id}
-                  user={u}
-                  sistemas_contratados={sistemas_contratados}
-                  onUpdate={(key, val) => updateUser(u.id, key, val)}
-                  onRemove={() => removeUser(u.id)}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <SectionCard
+        color="violet"
+        icon={Users}
+        title="Usuários do Cliente"
+        subtitle={subtitle}
+        action={actionBtn}
+      >
+        {/* Estado vazio */}
+        {users.length === 0 ? (
+          <div className="border-2 border-dashed border-slate-200 rounded-xl p-10 text-center">
+            <Users className="w-7 h-7 text-slate-300 mx-auto mb-2.5" />
+            <p className="text-sm text-slate-400 mb-1">Nenhum usuário cadastrado</p>
+            <p className="text-xs text-slate-300">Clique em "Novo Usuário" para começar</p>
+          </div>
+        ) : (
+          /* Tabela — quebra o padding do SectionCard para ir até as bordas */
+          <div className="-mx-4 -mb-4 overflow-x-auto rounded-b-xl">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200">
+                  <th className="text-left px-3 py-2.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wide min-w-36">Nome</th>
+                  <th className="text-left px-2 py-2.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wide min-w-44">E-mail</th>
+                  <th className="text-left px-2 py-2.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wide min-w-32">Perfil de Acesso</th>
+                  <th className="text-left px-2 py-2.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wide min-w-28">Login</th>
+                  <th className="text-left px-2 py-2.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wide min-w-40">Sistemas</th>
+                  <th className="text-center px-2 py-2.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wide w-16">Ativo</th>
+                  <th className="w-8" />
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-slate-50">
+                {users.map(u => (
+                  <UserRow
+                    key={u.id}
+                    user={u}
+                    sistemas_contratados={sistemas_contratados}
+                    onUpdate={(key, val) => updateUser(u.id, key, val)}
+                    onRemove={() => removeUser(u.id)}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </SectionCard>
 
       {/* Sticky save bar */}
       {dirty && (
