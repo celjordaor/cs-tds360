@@ -6,6 +6,7 @@ import {
 import { useUpdateClient, useUpdateProject, useContacts, useDeleteContact } from '@/hooks/useClients'
 import { useConfigOptionsActive } from '@/hooks/useConfigOptions'
 import { useProfilesCS } from '@/hooks/useProfiles'
+import { useToast } from '@/components/shared/ToastContext'
 import FormField from '@/components/form/FormField'
 import PhoneInput from '@/components/form/PhoneInput'
 import MultiSelect from '@/components/form/MultiSelect'
@@ -36,18 +37,8 @@ const BORDER = {
   red:    '#EF4444',
 }
 
-const PROJECT_STATUS_OPTS = [
-  { value: 'implantacao', label: 'Implantação' },
-  { value: 'ativo',       label: 'Ativo' },
-  { value: 'pausado',     label: 'Pausado' },
-  { value: 'encerrado',   label: 'Encerrado' },
-]
+// ─── SectionCard ─────────────────────────────────────────────────────────────
 
-// ─── Componentes internos ────────────────────────────────────────────────────
-
-/**
- * SectionCard — card com borda esquerda colorida e cabeçalho rico (Option A + C hybrid).
- */
 function SectionCard({ color, icon: Icon, title, subtitle, complete, children }) {
   const borderColor = BORDER[color] ?? '#94A3B8'
   const gradient    = GRAD[color]  ?? 'linear-gradient(135deg,#94A3B8,#64748B)'
@@ -57,10 +48,8 @@ function SectionCard({ color, icon: Icon, title, subtitle, complete, children })
       className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden"
       style={{ borderLeftColor: borderColor, borderLeftWidth: '3.5px' }}
     >
-      {/* Cabeçalho */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-slate-50">
         <div className="flex items-center gap-3">
-          {/* Badge com gradiente */}
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm"
             style={{ background: gradient }}
@@ -75,12 +64,9 @@ function SectionCard({ color, icon: Icon, title, subtitle, complete, children })
           </div>
         </div>
 
-        {/* Indicador de preenchimento */}
         {complete === true && (
-          <span className="flex items-center gap-1 text-xs font-medium text-emerald-600">
-            <span className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">
-              <Check className="w-3 h-3 text-emerald-600" strokeWidth={2.5} />
-            </span>
+          <span className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">
+            <Check className="w-3 h-3 text-emerald-600" strokeWidth={2.5} />
           </span>
         )}
         {complete === false && (
@@ -88,22 +74,22 @@ function SectionCard({ color, icon: Icon, title, subtitle, complete, children })
         )}
       </div>
 
-      {/* Conteúdo */}
       <div className="p-4">{children}</div>
     </div>
   )
 }
 
-// ─── Componente principal ────────────────────────────────────────────────────
+// ─── ProjectTab ───────────────────────────────────────────────────────────────
 
 export default function ProjectTab({ client, project }) {
+  const { toast } = useToast()
+
   // ── Estado do formulário ──
   const [cForm, setCForm] = useState({ ...client })
   const [pForm, setPForm] = useState({ ...project })
 
-  // helpers para atualizar fields
-  const sc  = (field) => (value) => setCForm((f) => ({ ...f, [field]: value }))
-  const sp  = (field) => (value) => setPForm((f) => ({ ...f, [field]: value }))
+  const sc   = (field) => (value) => setCForm((f) => ({ ...f, [field]: value }))
+  const sp   = (field) => (value) => setPForm((f) => ({ ...f, [field]: value }))
   const scev = (field) => (e) => sc(field)(e.target.value)
   const spev = (field) => (e) => sp(field)(e.target.value)
 
@@ -117,8 +103,13 @@ export default function ProjectTab({ client, project }) {
   const updateProject = useUpdateProject()
 
   async function handleSave() {
-    if (clientDirty)  await updateClient.mutateAsync({ id: client.id, ...cForm })
-    if (projectDirty) await updateProject.mutateAsync({ id: project.id, ...pForm })
+    try {
+      if (clientDirty)  await updateClient.mutateAsync({ id: client.id, ...cForm })
+      if (projectDirty) await updateProject.mutateAsync({ id: project.id, ...pForm })
+      toast({ type: 'success', message: 'Alterações salvas com sucesso!' })
+    } catch {
+      toast({ type: 'error', message: 'Erro ao salvar. Tente novamente.' })
+    }
   }
 
   function handleCancel() {
@@ -129,17 +120,17 @@ export default function ProjectTab({ client, project }) {
   // ── Dados auxiliares ──
   const { data: sistemasOpts = [] }  = useConfigOptionsActive('sistema')
   const { data: segmentosOpts = [] } = useConfigOptionsActive('segmento')
-  const { data: statusOpts = [] }    = useConfigOptionsActive('status_cliente')
-  const { data: profiles = [] }      = useProfilesCS()
+  // status_projeto é a category renomeada de status_cliente (migration 011)
+  const { data: statusOpts = [] }    = useConfigOptionsActive('status_projeto')
+  // useProfilesCS já retorna [{value, label, sublabel}] — não remapear
+  const { data: profileOpts = [] }   = useProfilesCS()
   const { data: contacts = [] }      = useContacts(project?.id)
   const deleteContact = useDeleteContact()
 
-  const profileOpts = profiles.map((p) => ({ value: p.id, label: p.nome }))
-
   // ── Contatos: popover ──
   const [contactPopover, setContactPopover] = useState({ open: false, contact: null })
-  const openNew  = () => setContactPopover({ open: true, contact: null })
-  const openEdit = (c) => setContactPopover({ open: true, contact: c })
+  const openNew    = () => setContactPopover({ open: true, contact: null })
+  const openEdit   = (c) => setContactPopover({ open: true, contact: c })
   const closePopover = () => setContactPopover({ open: false, contact: null })
 
   // ── Contatos: confirmação de exclusão ──
@@ -184,7 +175,8 @@ export default function ProjectTab({ client, project }) {
               placeholder="Selecione os segmentos…"
             />
           </FormField>
-          <FormField label="Status do Cliente" className="col-span-2">
+          {/* Status fica aqui — único campo de status, renomeado para "Status do Projeto" */}
+          <FormField label="Status do Projeto" className="col-span-2">
             <SearchSelect
               options={statusOpts}
               value={cForm.status ?? null}
@@ -221,17 +213,6 @@ export default function ProjectTab({ client, project }) {
             placeholder="Selecione os sistemas…"
           />
         </FormField>
-        <div className="mt-3">
-          <FormField label="Status do Projeto">
-            <SearchSelect
-              options={PROJECT_STATUS_OPTS}
-              value={pForm.status ?? null}
-              onChange={sp('status')}
-              placeholder="Selecione o status…"
-              clearable={false}
-            />
-          </FormField>
-        </div>
       </SectionCard>
 
       {/* ── 3. Responsáveis ───────────────────────────────────────────── */}
@@ -389,7 +370,6 @@ export default function ProjectTab({ client, project }) {
         }
         complete={isContactsComp ? true : false}
       >
-        {/* Lista de contatos */}
         {contacts.length > 0 && (
           <div className="space-y-2 mb-3">
             {contacts.map((c) => (
@@ -403,16 +383,10 @@ export default function ProjectTab({ client, project }) {
                   )}
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-slate-800 truncate">{c.nome}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      {c.cargo && (
-                        <span className="text-xs text-slate-400 truncate">{c.cargo}</span>
-                      )}
-                      {c.telefone && (
-                        <span className="text-xs text-slate-400 truncate">· {c.telefone}</span>
-                      )}
-                      {c.email && (
-                        <span className="text-xs text-slate-400 truncate">· {c.email}</span>
-                      )}
+                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                      {c.cargo && <span className="text-xs text-slate-400">{c.cargo}</span>}
+                      {c.telefone && <span className="text-xs text-slate-400">· {c.telefone}</span>}
+                      {c.email && <span className="text-xs text-slate-400">· {c.email}</span>}
                     </div>
                   </div>
                 </div>
@@ -437,7 +411,6 @@ export default function ProjectTab({ client, project }) {
           </div>
         )}
 
-        {/* Botão de novo contato */}
         <button
           onClick={openNew}
           className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl border-2 border-dashed border-slate-200 text-sm text-slate-400 hover:border-orange-300 hover:text-orange-500 hover:bg-orange-50 transition-colors"
@@ -449,7 +422,7 @@ export default function ProjectTab({ client, project }) {
 
       {/* ── Barra de salvar (sticky) ───────────────────────────────────── */}
       {dirty && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-end gap-3 px-6 py-3 bg-white border-t border-slate-200 shadow-lg">
+        <div className="fixed bottom-0 left-0 right-0 z-40 flex items-center gap-3 px-6 py-3 bg-white border-t border-slate-200 shadow-lg">
           <span className="text-xs text-slate-400 mr-auto">Você tem alterações não salvas</span>
           <button
             type="button"
@@ -479,7 +452,7 @@ export default function ProjectTab({ client, project }) {
         onClose={closePopover}
       />
 
-      {/* ── Diálogo de confirmação de exclusão ─────────────────────────── */}
+      {/* ── Confirmação de exclusão ────────────────────────────────────── */}
       <ConfirmDialog
         open={!!deleteTarget}
         title="Excluir contato"

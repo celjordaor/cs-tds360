@@ -94,7 +94,7 @@ const CLIENT_COLS = new Set([
 const PROJECT_COLS = new Set([
   'sistemas_contratados','contrato_numero','data_assinatura','data_kickoff',
   'data_golive_prevista','data_golive_real','responsavel_comercial','responsavel_cs_id',
-  'apoio_cs_id','responsavel_tecnico_id','status','movidesk_id','sensedata_id',
+  'apoio_cs_id','responsavel_tecnico_id','movidesk_id','sensedata_id',
   'licencas_midiaplus','licencas_adsim','licencas_adanalytics','licencas_adchecking',
   'alertas_suporte','obs_geral','onboarding_pct',
 ])
