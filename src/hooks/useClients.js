@@ -44,7 +44,7 @@ export function useProject(clientId) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('projects')
-        .select('*')
+        .select('*, responsavel_cs:profiles!responsavel_cs_id(nome)')
         .eq('client_id', clientId)
         .order('created_at', { ascending: false })
         .limit(1)
