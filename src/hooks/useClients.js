@@ -76,10 +76,28 @@ export function useCreateClient() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ client, project }) => {
+      // 1. Cria o cliente
       const { data: c, error: ce } = await supabase.from('clients').insert(client).select().single()
       if (ce) throw ce
-      const { data: p, error: pe } = await supabase.from('projects').insert({ ...project, client_id: c.id }).select().single()
+
+      // 2. Separa sistemas_contratados (TEXT[]) para evitar bug ?columns= do PostgREST
+      const { sistemas_contratados, ...projectBase } = project
+      const { data: p, error: pe } = await supabase
+        .from('projects')
+        .insert({ ...projectBase, client_id: c.id })
+        .select()
+        .single()
       if (pe) throw pe
+
+      // 3. Atualiza sistemas_contratados separadamente (PATCH não adiciona ?columns=)
+      if (sistemas_contratados?.length) {
+        const { error: se } = await supabase
+          .from('projects')
+          .update({ sistemas_contratados })
+          .eq('id', p.id)
+        if (se) throw se
+      }
+
       return { client: c, project: p }
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),

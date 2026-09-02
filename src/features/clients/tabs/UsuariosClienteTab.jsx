@@ -140,7 +140,7 @@ function UserRow({ user, sistemas_contratados, onUpdate, onRemove }) {
 export default function UsuariosClienteTab({ project }) {
   const { data: dbUsers = [], isLoading } = useClientUsers(project?.id)
   const save  = useSaveClientUsers(project?.id)
-  const toast = useToast()
+  const { toast } = useToast()
 
   const sistemas_contratados = project?.sistemas_contratados ?? []
 

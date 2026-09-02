@@ -33,7 +33,7 @@ export default function ClientPage() {
 function ClientPageInner() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const toast = useToast()
+  const { toast } = useToast()
 
   const { data: client, isLoading: loadingClient } = useClient(id)
   const { data: project, isLoading: loadingProject } = useProject(id)
