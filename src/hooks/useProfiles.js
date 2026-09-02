@@ -7,12 +7,12 @@ export function useProfilesCS() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, email, role')
+        .select('id, nome, email, role')
         .in('role', ['cs', 'manager', 'admin', 'super_admin'])
         .eq('ativo', true)
-        .order('full_name')
+        .order('nome')
       if (error) throw error
-      return (data ?? []).map(p => ({ value: p.id, label: p.full_name, sublabel: p.email }))
+      return (data ?? []).map(p => ({ value: p.id, label: p.nome, sublabel: p.email }))
     },
     staleTime: 5 * 60 * 1000,
   })

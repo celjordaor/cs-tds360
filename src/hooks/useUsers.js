@@ -17,19 +17,17 @@ export function useUsers() {
   })
 }
 
-// Pré-cria perfil e envia e-mail de convite com link para definir senha
+// Convida usuário via Edge Function (usa service role server-side)
+// Fluxo: cria auth.users → trigger cria profile → envia e-mail PASSWORD_RECOVERY
 export function useCreateUser() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ email, nome, role }) => {
-      const tempId = crypto.randomUUID()
-      const { error: pe } = await supabase.from('profiles').insert({
-        id: tempId, email, nome, role, ativo: true,
+      const { data, error } = await supabase.functions.invoke('invite-user', {
+        body: { email, nome, role, siteUrl: window.location.origin },
       })
-      if (pe) throw pe
-      await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      })
+      if (error) throw error
+      if (data?.error) throw new Error(data.error)
       return { email }
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
