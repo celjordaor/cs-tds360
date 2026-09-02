@@ -525,7 +525,7 @@ export default function EmissorasTab({ project }) {
       await save.mutateAsync({ toUpsert: emissoras, toDelete: deletedIds })
       toast({ type: 'success', message: 'Emissoras salvas com sucesso.' })
     } catch (err) {
-      toast({ type: 'error', message: 'Erro ao salvar emissoras.' })
+      console.error('[EmissorasTab] Erro ao salvar:', err); toast({ type: 'error', message: `Erro: ${err?.message ?? String(err)}` })
     }
   }
 
