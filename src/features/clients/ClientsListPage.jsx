@@ -79,7 +79,7 @@ function ClientsListInner() {
   const [filters, setFilters] = useState({})
   const [showNew, setShowNew] = useState(false)
   const dSearch = useDebounce(search, 350)
-  const { data: statusOpts = [] } = useConfigOptionsActive('status_cliente')
+  const { data: statusOpts = [] } = useConfigOptionsActive('status_projeto')
 
   const { data: clients = [], isLoading } = useClients({ search: dSearch, ...filters })
 
