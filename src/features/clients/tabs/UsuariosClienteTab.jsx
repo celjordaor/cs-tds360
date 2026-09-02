@@ -180,7 +180,10 @@ export default function UsuariosClienteTab({ project }) {
 
   async function handleSave() {
     try {
-      await save.mutateAsync({ toUpsert: users, toDelete: deletedIds })
+      const dbIds = new Set(dbUsers.map(u => u.id))
+      const toInsert = users.filter(u => !dbIds.has(u.id))
+      const toUpdate = users.filter(u =>  dbIds.has(u.id))
+      await save.mutateAsync({ toInsert, toUpdate, toDelete: deletedIds })
       toast({ type: 'success', message: 'Usuários salvos com sucesso.' })
     } catch {
       toast({ type: 'error', message: 'Erro ao salvar usuários. Tente novamente.' })

@@ -19,11 +19,23 @@ export function useClientUsers(projectId) {
   })
 }
 
+function buildPayload(u, projectId) {
+  return {
+    project_id: projectId,
+    nome:    u.nome    ?? '',
+    email:   u.email   ?? '',
+    perfil:  u.perfil  ?? '',
+    login:   u.login   ?? '',
+    sistemas: Array.isArray(u.sistemas) ? u.sistemas : [],
+    ativo:   u.ativo   ?? true,
+  }
+}
+
 export function useSaveClientUsers(projectId) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async ({ toUpsert, toDelete }) => {
-      // 1. Deleta os removidos
+    mutationFn: async ({ toInsert, toUpdate, toDelete }) => {
+      // 1. Remove excluídos
       if (toDelete.length) {
         const { error } = await supabase
           .from('client_users')
@@ -32,21 +44,19 @@ export function useSaveClientUsers(projectId) {
         if (error) throw error
       }
 
-      // 2. Upsert com payload limpo e onConflict explícito
-      if (toUpsert.length) {
-        const payload = toUpsert.map(u => ({
-          id:         u.id,
-          project_id: projectId,
-          nome:       u.nome   ?? '',
-          email:      u.email  ?? '',
-          perfil:     u.perfil ?? '',
-          login:      u.login  ?? '',
-          sistemas:   Array.isArray(u.sistemas) ? u.sistemas : [],
-          ativo:      u.ativo  ?? true,
-        }))
+      // 2. Insere novos (sem upsert para evitar bug do columns TEXT[])
+      if (toInsert.length) {
+        const rows = toInsert.map(u => ({ id: u.id, ...buildPayload(u, projectId) }))
+        const { error } = await supabase.from('client_users').insert(rows)
+        if (error) throw error
+      }
+
+      // 3. Atualiza existentes (update individual por id)
+      for (const u of toUpdate) {
         const { error } = await supabase
           .from('client_users')
-          .upsert(payload, { onConflict: 'id', ignoreDuplicates: false })
+          .update(buildPayload(u, projectId))
+          .eq('id', u.id)
         if (error) throw error
       }
     },
