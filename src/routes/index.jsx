@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth'
 import AppLayout from '@/components/layout/AppLayout'
 import DashboardsPageContent from '@/features/dashboards/DashboardsPage'
 import AnalyticsPageContent from '@/features/analytics/AnalyticsPage'
+import { useScreenPermissions, SCREEN_DEFAULTS } from '@/hooks/useScreenPermissions'
 
 const ROLE_HOME = {
   cs:          '/clients',
@@ -18,10 +19,17 @@ export function RequireAuth({ children }) {
   return children
 }
 
-export function RequireRole({ roles, children }) {
+export function RequireRole({ roles, screen, children }) {
   const { profile, loading } = useAuth()
+  const { data: permissions } = useScreenPermissions()
   if (loading) return <PageLoading />
-  if (!roles.includes(profile?.role)) {
+  // super_admin sempre tem acesso
+  if (profile?.role === 'super_admin') return children
+  // Se screen fornecida, usa permissões do DB (com fallback para defaults estáticos)
+  const allowedRoles = screen
+    ? (permissions?.[screen]?.roles ?? SCREEN_DEFAULTS[screen]?.roles ?? [])
+    : (roles ?? [])
+  if (!allowedRoles.includes(profile?.role)) {
     return <Navigate to={ROLE_HOME[profile?.role] || '/login'} replace />
   }
   return children
@@ -45,7 +53,7 @@ function PageLoading() {
 export function AnalyticsPage() {
   return (
     <RequireAuth>
-      <RequireRole roles={['super_admin','admin','manager']}>
+      <RequireRole screen="analytics">
         <AppLayout><AnalyticsPageContent /></AppLayout>
       </RequireRole>
     </RequireAuth>
@@ -55,7 +63,7 @@ export function AnalyticsPage() {
 export function DashboardsPage() {
   return (
     <RequireAuth>
-      <RequireRole roles={['super_admin','admin','manager','cs']}>
+      <RequireRole screen="dashboards">
         <AppLayout><DashboardsPageContent /></AppLayout>
       </RequireRole>
     </RequireAuth>

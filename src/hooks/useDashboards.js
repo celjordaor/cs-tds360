@@ -55,3 +55,23 @@ export function useUploadDashboard() {
 export function getDashboardUrl(storagePath) {
   return supabase.storage.from('dashboards').getPublicUrl(storagePath).data.publicUrl
 }
+
+export function useUpdateDashboardRoles() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, roles_acesso }) => {
+      const { error } = await supabase.from('dashboards').update({ roles_acesso }).eq('id', id)
+      if (error) throw error
+    },
+    onMutate: async ({ id, roles_acesso }) => {
+      await qc.cancelQueries({ queryKey: KEY })
+      const previous = qc.getQueryData(KEY)
+      qc.setQueryData(KEY, old => (old ?? []).map(d => d.id === id ? { ...d, roles_acesso } : d))
+      return { previous }
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) qc.setQueryData(KEY, ctx.previous)
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: KEY }),
+  })
+}

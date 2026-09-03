@@ -1,12 +1,14 @@
 import { useState } from 'react'
-import { Settings, Users } from 'lucide-react'
+import { Settings, Users, ShieldCheck } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
 import ConfigOptionsTab from './tabs/ConfigOptionsTab'
 import UsersTab from './tabs/UsersTab'
+import AccessProfilesTab from './tabs/AccessProfilesTab'
 
 const TABS = [
   { key: 'options', label: 'Opções de campos', icon: Settings },
   { key: 'users',   label: 'Usuários',          icon: Users },
+  { key: 'access',  label: 'Perfis de Acesso',  icon: ShieldCheck },
 ]
 
 export default function SettingsPage() {
@@ -49,6 +51,7 @@ export default function SettingsPage() {
         <div className="bg-white border border-slate-200 rounded-2xl p-6">
           {tab === 'options' && <ConfigOptionsTab />}
           {tab === 'users'   && <UsersTab />}
+          {tab === 'access'  && <AccessProfilesTab />}
         </div>
       </div>
     </AppLayout>

@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { ExternalLink, Upload, RefreshCw, AlertCircle, Loader2 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/components/shared/ToastContext'
-import { useDashboards, useUploadDashboard, getDashboardUrl } from '@/hooks/useDashboards'
+import { useDashboards, useUploadDashboard, useUpdateDashboardRoles, getDashboardUrl } from '@/hooks/useDashboards'
 import PageWrapper from '@/components/layout/PageWrapper'
 import Spinner from '@/components/ui/Spinner'
 import EmptyState from '@/components/ui/EmptyState'
@@ -19,6 +19,16 @@ const COR = {
 }
 
 const ADMIN_ROLES = ['super_admin', 'admin']
+// ─── Chips de role por dashboard ─────────────────────────────────────────────
+const ALL_ROLES = ['cs', 'manager', 'admin', 'super_admin']
+
+const ROLE_CHIP = {
+  cs:          { label: 'CS',     active: 'bg-blue-100 text-blue-700 border-blue-300',   inactive: 'bg-slate-50 text-slate-300 border-slate-200' },
+  manager:     { label: 'Gerente',active: 'bg-orange-100 text-orange-700 border-orange-300', inactive: 'bg-slate-50 text-slate-300 border-slate-200' },
+  admin:       { label: 'Admin',  active: 'bg-yellow-100 text-yellow-700 border-yellow-300', inactive: 'bg-slate-50 text-slate-300 border-slate-200' },
+  super_admin: { label: 'Super',  active: 'bg-red-100 text-red-700 border-red-300',      inactive: 'bg-slate-50 text-slate-300 border-slate-200' },
+}
+
 
 function fmtDate(iso) {
   if (!iso) return null
@@ -43,7 +53,7 @@ async function openDashboard(storagePath) {
 }
 
 // ─── Card individual ──────────────────────────────────────────────────────────
-function DashboardCard({ dash, isAdmin, uploadingId, onUpload }) {
+function DashboardCard({ dash, isAdmin, uploadingId, onUpload, onToggleRole }) {
   const fileRef   = useRef(null)
   const colors    = COR[dash.cor] ?? COR.orange
   const isUploading = uploadingId === dash.id
@@ -114,6 +124,30 @@ function DashboardCard({ dash, isAdmin, uploadingId, onUpload }) {
         </p>
       </div>
 
+
+      {/* Chips de acesso por role */}
+      <div className="px-4 pb-3 flex items-center gap-1.5 flex-wrap">
+        {ALL_ROLES.map(role => {
+          const cfg       = ROLE_CHIP[role]
+          const hasAccess = (dash.roles_acesso ?? ALL_ROLES).includes(role)
+          const locked    = role === 'super_admin'
+          const clickable = isAdmin && !locked
+          return (
+            <button
+              key={role}
+              disabled={!clickable}
+              onClick={() => clickable && onToggleRole && onToggleRole(role, hasAccess)}
+              title={locked ? 'Super Admin sempre tem acesso' : (hasAccess ? `Remover acesso: ${cfg.label}` : `Liberar acesso: ${cfg.label}`)}
+              className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-all
+                ${hasAccess ? cfg.active : cfg.inactive}
+                ${clickable ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`}
+            >
+              {cfg.label}
+            </button>
+          )
+        })}
+      </div>
+
       {/* Botões de ação */}
       <div className="border-t border-slate-50 px-4 py-3 flex items-center gap-2">
         {hasFile ? (
@@ -177,6 +211,7 @@ export default function DashboardsPageContent() {
 
   const { data: dashboards = [], isLoading } = useDashboards()
   const upload = useUploadDashboard()
+  const updateRoles = useUpdateDashboardRoles()
 
   const isAdmin = ADMIN_ROLES.includes(profile?.role)
 
@@ -200,6 +235,16 @@ export default function DashboardsPageContent() {
     } finally {
       setUploadingId(null)
     }
+  }
+
+
+  function handleToggleRole(dash, role, currentlyHasAccess) {
+    const current = dash.roles_acesso ?? ALL_ROLES
+    const next = currentlyHasAccess
+      ? current.filter(r => r !== role)
+      : [...current, role]
+    if (!next.includes('super_admin')) next.push('super_admin')
+    updateRoles.mutate({ id: dash.id, roles_acesso: next })
   }
 
   return (
@@ -239,6 +284,7 @@ export default function DashboardsPageContent() {
               isAdmin={isAdmin}
               uploadingId={uploadingId}
               onUpload={handleUpload}
+              onToggleRole={(role, hasAccess) => handleToggleRole(dash, role, hasAccess)}
             />
           ))}
         </div>

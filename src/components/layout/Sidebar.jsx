@@ -1,13 +1,14 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { BarChart2, TrendingUp, Users, Settings, LogOut, ChevronRight } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { useScreenPermissions, SCREEN_DEFAULTS } from '@/hooks/useScreenPermissions'
 import { getInitials } from '@/lib/utils'
 
 const NAV_ITEMS = [
-  { label: 'Analytics CS',      icon: BarChart2,   to: '/analytics',  roles: ['super_admin','admin','manager'] },
-  { label: 'Dashboards',        icon: TrendingUp,  to: '/dashboards', roles: ['super_admin','admin','manager','cs'] },
-  { label: 'Customer Success',  icon: Users,       to: '/clients',    roles: ['super_admin','admin','manager','cs'] },
-  { label: 'Configurações',     icon: Settings,    to: '/settings',   roles: ['super_admin','admin'] },
+  { label: 'Analytics CS',     icon: BarChart2,  to: '/analytics',  screen: 'analytics'  },
+  { label: 'Dashboards',       icon: TrendingUp, to: '/dashboards', screen: 'dashboards' },
+  { label: 'Customer Success', icon: Users,      to: '/clients',    screen: 'clients'    },
+  { label: 'Configurações',    icon: Settings,   to: '/settings',   screen: 'settings'   },
 ]
 
 const ROLE_LABELS = {
@@ -19,9 +20,15 @@ const ROLE_LABELS = {
 
 export default function Sidebar() {
   const { profile, signOut } = useAuth()
+  const { data: permissions } = useScreenPermissions()
   const navigate = useNavigate()
 
-  const visibleItems = NAV_ITEMS.filter(item => profile?.role && item.roles.includes(profile.role))
+  const visibleItems = NAV_ITEMS.filter(item => {
+    if (!profile?.role) return false
+    if (profile.role === 'super_admin') return true
+    const allowedRoles = permissions?.[item.screen]?.roles ?? SCREEN_DEFAULTS[item.screen]?.roles ?? []
+    return allowedRoles.includes(profile.role)
+  })
 
   async function handleSignOut() { await signOut(); navigate('/login') }
 
