@@ -2,6 +2,7 @@ import { Navigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import AppLayout from '@/components/layout/AppLayout'
 import ComingSoon from '@/components/shared/ComingSoon'
+import DashboardsPageContent from '@/features/dashboards/DashboardsPage'
 
 const ROLE_HOME = {
   cs:          '/clients',
@@ -54,8 +55,8 @@ export function AnalyticsPage() {
 export function DashboardsPage() {
   return (
     <RequireAuth>
-      <RequireRole roles={['super_admin','admin','manager']}>
-        <AppLayout><ComingSoon title="Dashboards" /></AppLayout>
+      <RequireRole roles={['super_admin','admin','manager','cs']}>
+        <AppLayout><DashboardsPageContent /></AppLayout>
       </RequireRole>
     </RequireAuth>
   )
