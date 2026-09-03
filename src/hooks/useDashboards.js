@@ -22,16 +22,20 @@ export function useUploadDashboard() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, storagePath, file }) => {
-      // 1. Upload (upsert) do HTML no Storage
+      // Força Content-Type text/html;charset=utf-8 independente do browser/SO.
+      // Sem o Blob explícito, alguns browsers enviam application/octet-stream
+      // e o Storage serve o arquivo como texto puro (fonte visível no browser).
+      const htmlBlob = new Blob([file], { type: 'text/html; charset=utf-8' })
+
       const { error: uploadError } = await supabase.storage
         .from('dashboards')
-        .upload(storagePath, file, {
+        .upload(storagePath, htmlBlob, {
           upsert: true,
-          contentType: 'text/html',
+          contentType: 'text/html; charset=utf-8',
         })
       if (uploadError) throw uploadError
 
-      // 2. Atualiza metadados na tabela
+      // Atualiza metadados na tabela
       const { error: updateError } = await supabase
         .from('dashboards')
         .update({
@@ -47,7 +51,6 @@ export function useUploadDashboard() {
 
 /**
  * Retorna a URL pública do HTML de um dashboard no Storage.
- * Chamar fora de hooks (ex: no href de <a> ou window.open).
  */
 export function getDashboardUrl(storagePath) {
   return supabase.storage.from('dashboards').getPublicUrl(storagePath).data.publicUrl
