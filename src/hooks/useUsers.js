@@ -41,6 +41,18 @@ export function useUpdateUser() {
       const { error } = await supabase.from('profiles').update(data).eq('id', id)
       if (error) throw error
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    // Atualiza o cache imediatamente (antes da resposta do servidor)
+    // para que o <select> controlado não reverta para o valor antigo
+    onMutate: async ({ id, ...data }) => {
+      await qc.cancelQueries({ queryKey: KEY })
+      const previous = qc.getQueryData(KEY)
+      qc.setQueryData(KEY, old => (old ?? []).map(u => u.id === id ? { ...u, ...data } : u))
+      return { previous }
+    },
+    onError: (_err, _vars, ctx) => {
+      // Reverte em caso de erro
+      if (ctx?.previous) qc.setQueryData(KEY, ctx.previous)
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: KEY }),
   })
 }
