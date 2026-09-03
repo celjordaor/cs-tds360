@@ -109,6 +109,9 @@ function DashboardCard({ dash, isAdmin, uploadingId, onUpload }) {
             </span>
           )}
         </div>
+        <p className="mt-2 text-[10px] text-slate-300 font-mono truncate" title={dash.storage_path}>
+          {dash.storage_path}
+        </p>
       </div>
 
       {/* Botões de ação */}
@@ -170,18 +173,12 @@ function DashboardCard({ dash, isAdmin, uploadingId, onUpload }) {
 export default function DashboardsPageContent() {
   const { profile } = useAuth()
   const toast = useToast()
-  const [catFiltro, setCatFiltro] = useState('Todos')
   const [uploadingId, setUploadingId] = useState(null)
 
   const { data: dashboards = [], isLoading } = useDashboards()
   const upload = useUploadDashboard()
 
   const isAdmin = ADMIN_ROLES.includes(profile?.role)
-
-  const categorias = ['Todos', ...new Set(dashboards.map(d => d.categoria))]
-  const filtered   = catFiltro === 'Todos'
-    ? dashboards
-    : dashboards.filter(d => d.categoria === catFiltro)
 
   const pendingCount = dashboards.filter(d => d.tamanho_kb == null).length
 
@@ -208,7 +205,7 @@ export default function DashboardsPageContent() {
   return (
     <PageWrapper
       title="Dashboards"
-      subtitle={`${filtered.length} dashboard${filtered.length !== 1 ? 's' : ''}`}
+      subtitle={`${dashboards.length} dashboard${dashboards.length !== 1 ? 's' : ''}`}
     >
       {/* Aviso de arquivos pendentes (só para admin) */}
       {isAdmin && pendingCount > 0 && (
@@ -218,25 +215,6 @@ export default function DashboardsPageContent() {
             <span className="font-semibold">{pendingCount} dashboard{pendingCount !== 1 ? 's' : ''} sem arquivo.</span>
             {' '}Clique em <strong>Enviar</strong> em cada card para fazer o upload do HTML.
           </p>
-        </div>
-      )}
-
-      {/* Filtro por categoria */}
-      {dashboards.length > 0 && (
-        <div className="flex items-center gap-2 mb-5 overflow-x-auto pb-1">
-          {categorias.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setCatFiltro(cat)}
-              className={`shrink-0 text-sm px-4 py-1.5 rounded-full border font-medium transition-colors ${
-                catFiltro === cat
-                  ? 'bg-orange-500 text-white border-orange-500 shadow-sm'
-                  : 'bg-white text-slate-600 border-slate-200 hover:border-orange-300 hover:text-orange-600'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
         </div>
       )}
 
@@ -254,7 +232,7 @@ export default function DashboardsPageContent() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filtered.map(dash => (
+          {dashboards.map(dash => (
             <DashboardCard
               key={dash.id}
               dash={dash}
