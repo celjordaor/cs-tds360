@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { ExternalLink, Upload, RefreshCw, AlertCircle } from 'lucide-react'
+import { ExternalLink, Upload, RefreshCw, AlertCircle, Loader2 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/components/shared/ToastContext'
 import { useDashboards, useUploadDashboard, getDashboardUrl } from '@/hooks/useDashboards'
@@ -27,14 +27,41 @@ function fmtDate(iso) {
   })
 }
 
+/**
+ * Abre o dashboard em nova aba renderizando o HTML corretamente.
+ * O Supabase Storage serve arquivos HTML como download (Content-Disposition: attachment),
+ * então fazemos fetch do conteúdo, criamos um Blob URL com text/html e abrimos esse URL.
+ */
+async function openDashboard(storagePath) {
+  const storageUrl = getDashboardUrl(storagePath)
+  const res = await fetch(storageUrl)
+  if (!res.ok) throw new Error(`Erro ao carregar dashboard (${res.status})`)
+  const html = await res.text()
+  const blob = new Blob([html], { type: 'text/html; charset=utf-8' })
+  const blobUrl = URL.createObjectURL(blob)
+  window.open(blobUrl, '_blank')
+}
+
 // ─── Card individual ──────────────────────────────────────────────────────────
 function DashboardCard({ dash, isAdmin, uploadingId, onUpload }) {
-  const fileRef = useRef(null)
-  const colors  = COR[dash.cor] ?? COR.orange
+  const fileRef   = useRef(null)
+  const colors    = COR[dash.cor] ?? COR.orange
   const isUploading = uploadingId === dash.id
+  const [opening, setOpening] = useState(false)
 
   // tamanho_kb é null enquanto o HTML ainda não foi enviado ao Storage
   const hasFile = dash.tamanho_kb != null
+
+  async function handleOpen() {
+    setOpening(true)
+    try {
+      await openDashboard(dash.storage_path)
+    } catch (err) {
+      alert(`Não foi possível abrir o dashboard: ${err.message}`)
+    } finally {
+      setOpening(false)
+    }
+  }
 
   function handleFileChange(e) {
     const file = e.target.files?.[0]
@@ -87,17 +114,20 @@ function DashboardCard({ dash, isAdmin, uploadingId, onUpload }) {
       {/* Botões de ação */}
       <div className="border-t border-slate-50 px-4 py-3 flex items-center gap-2">
         {hasFile ? (
-          <a
-            href={getDashboardUrl(dash.storage_path)}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={handleOpen}
+            disabled={opening}
             className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-white
-                       rounded-lg py-2 px-3 transition-opacity hover:opacity-90"
+                       rounded-lg py-2 px-3 transition-opacity hover:opacity-90
+                       disabled:opacity-60 disabled:cursor-not-allowed"
             style={{ background: colors.border }}
           >
-            <ExternalLink className="w-3.5 h-3.5" />
-            Abrir
-          </a>
+            {opening
+              ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              : <ExternalLink className="w-3.5 h-3.5" />
+            }
+            {opening ? 'Abrindo…' : 'Abrir'}
+          </button>
         ) : (
           <div className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium
                           text-slate-400 bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 cursor-default">
