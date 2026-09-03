@@ -435,19 +435,23 @@ export default function ClientExportPage() {
           )}
 
           {/* 5. Usuários do Cliente */}
-          {clientUsers.length > 0 && (
+          {project && (
             <Section title="5. Usuários do Cliente" avoidBreak={false}>
-              <DataTable
-                cols={['Nome', 'E-mail', 'Perfil', 'Login', 'Sistemas', 'Ativo']}
-                rows={clientUsers.map(u => [
-                  u.nome,
-                  u.email,
-                  u.perfil,
-                  u.login,
-                  u.sistemas?.join(', ') || '—',
-                  u.ativo ? 'Sim' : 'Não',
-                ])}
-              />
+              {clientUsers.length > 0 ? (
+                <DataTable
+                  cols={['Nome', 'E-mail', 'Perfil', 'Login', 'Sistemas', 'Ativo']}
+                  rows={clientUsers.map(u => [
+                    u.nome,
+                    u.email,
+                    u.perfil,
+                    u.login,
+                    u.sistemas?.join(', ') || '—',
+                    u.ativo ? 'Sim' : 'Não',
+                  ])}
+                />
+              ) : (
+                <Empty />
+              )}
             </Section>
           )}
 
@@ -493,6 +497,41 @@ export default function ClientExportPage() {
               ))}
             </Section>
           )}
+
+          {/* 7. Alertas e Anotações */}
+          {project?.anotacoes && (() => {
+            const an = project.anotacoes
+            const hasAny = an.alertas || an.atencao || an.situacoes || an.obs_cs
+            if (!hasAny) return null
+            return (
+              <Section title="7. Alertas e Anotações" avoidBreak={false}>
+                {an.alertas && (
+                  <div style={{ marginBottom: 14 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#dc2626', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Alertas Críticos</div>
+                    <div style={{ padding: '8px 12px', background: '#fef2f2', borderRadius: 6, fontSize: 11, color: '#7f1d1d', borderLeft: '3px solid #fca5a5', whiteSpace: 'pre-wrap' }}>{an.alertas}</div>
+                  </div>
+                )}
+                {an.atencao && (
+                  <div style={{ marginBottom: 14 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#d97706', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Pontos de Atenção</div>
+                    <div style={{ padding: '8px 12px', background: '#fffbeb', borderRadius: 6, fontSize: 11, color: '#78350f', borderLeft: '3px solid #fcd34d', whiteSpace: 'pre-wrap' }}>{an.atencao}</div>
+                  </div>
+                )}
+                {an.situacoes && (
+                  <div style={{ marginBottom: 14 }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Situações Específicas</div>
+                    <div style={{ padding: '8px 12px', background: '#eff6ff', borderRadius: 6, fontSize: 11, color: '#1e3a8a', borderLeft: '3px solid #93c5fd', whiteSpace: 'pre-wrap' }}>{an.situacoes}</div>
+                  </div>
+                )}
+                {an.obs_cs && (
+                  <div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Anotações da Equipe CS</div>
+                    <div style={{ padding: '8px 12px', background: '#f8fafc', borderRadius: 6, fontSize: 11, color: '#334155', borderLeft: '3px solid #cbd5e1', whiteSpace: 'pre-wrap' }}>{an.obs_cs}</div>
+                  </div>
+                )}
+              </Section>
+            )
+          })()}
 
           {/* Rodapé */}
           <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 16, marginTop: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

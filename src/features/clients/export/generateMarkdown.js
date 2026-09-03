@@ -181,16 +181,18 @@ export function generateMarkdown({ client, project, contacts = [], clientUsers =
   }
 
   // ── 5. Usuários do Cliente ─────────────────────────────────────────────────
+  lines.push(`## 5. Usuários do Cliente`)
+  lines.push(``)
   if (clientUsers.length > 0) {
-    lines.push(`## 5. Usuários do Cliente`)
-    lines.push(``)
     lines.push(`| Nome | E-mail | Perfil | Login | Sistemas | Ativo |`)
     lines.push(`|---|---|---|---|---|---|`)
     clientUsers.forEach(u => {
       lines.push(`| ${fVal(u.nome)} | ${fVal(u.email)} | ${fVal(u.perfil)} | ${fVal(u.login)} | ${u.sistemas?.join(', ') || '—'} | ${u.ativo ? 'Sim' : 'Não'} |`)
     })
-    lines.push(``)
+  } else {
+    lines.push(`_Nenhum usuário cadastrado._`)
   }
+  lines.push(``)
 
   // ── 6. Emissoras e Veículos ────────────────────────────────────────────────
   if (emissoras.length > 0) {
@@ -228,6 +230,37 @@ export function generateMarkdown({ client, project, contacts = [], clientUsers =
         lines.push(``)
       }
     })
+  }
+
+  // ── 7. Alertas e Anotações ───────────────────────────────────────────────────
+  const an = project?.anotacoes
+  if (an && (an.alertas || an.atencao || an.situacoes || an.obs_cs)) {
+    lines.push(`## 7. Alertas e Anotações`)
+    lines.push(``)
+    if (an.alertas) {
+      lines.push(`### Alertas Críticos`)
+      lines.push(``)
+      lines.push(an.alertas)
+      lines.push(``)
+    }
+    if (an.atencao) {
+      lines.push(`### Pontos de Atenção`)
+      lines.push(``)
+      lines.push(an.atencao)
+      lines.push(``)
+    }
+    if (an.situacoes) {
+      lines.push(`### Situações Específicas do Projeto`)
+      lines.push(``)
+      lines.push(an.situacoes)
+      lines.push(``)
+    }
+    if (an.obs_cs) {
+      lines.push(`### Anotações da Equipe CS`)
+      lines.push(``)
+      lines.push(an.obs_cs)
+      lines.push(``)
+    }
   }
 
   lines.push(`---`)
