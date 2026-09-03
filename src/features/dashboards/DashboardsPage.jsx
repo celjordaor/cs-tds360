@@ -223,7 +223,7 @@ export default function DashboardsPageContent() {
         <div className="py-20 flex justify-center">
           <Spinner size="lg" />
         </div>
-      ) : filtered.length === 0 ? (
+      ) : dashboards.length === 0 ? (
         <div className="bg-white rounded-xl border border-slate-200">
           <EmptyState
             title="Nenhum dashboard disponível"
