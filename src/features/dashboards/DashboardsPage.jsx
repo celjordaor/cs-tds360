@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { ExternalLink, Upload, RefreshCw } from 'lucide-react'
+import { ExternalLink, Upload, RefreshCw, AlertCircle } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/components/shared/ToastContext'
 import { useDashboards, useUploadDashboard, getDashboardUrl } from '@/hooks/useDashboards'
@@ -21,7 +21,7 @@ const COR = {
 const ADMIN_ROLES = ['super_admin', 'admin']
 
 function fmtDate(iso) {
-  if (!iso) return 'Nunca atualizado'
+  if (!iso) return null
   return new Date(iso).toLocaleDateString('pt-BR', {
     day: '2-digit', month: '2-digit', year: 'numeric',
   })
@@ -30,15 +30,16 @@ function fmtDate(iso) {
 // ─── Card individual ──────────────────────────────────────────────────────────
 function DashboardCard({ dash, isAdmin, uploadingId, onUpload }) {
   const fileRef = useRef(null)
-  const colors = COR[dash.cor] ?? COR.orange
+  const colors  = COR[dash.cor] ?? COR.orange
   const isUploading = uploadingId === dash.id
-  const publicUrl = getDashboardUrl(dash.storage_path)
+
+  // tamanho_kb é null enquanto o HTML ainda não foi enviado ao Storage
+  const hasFile = dash.tamanho_kb != null
 
   function handleFileChange(e) {
     const file = e.target.files?.[0]
     if (!file) return
     onUpload({ id: dash.id, storagePath: dash.storage_path, file })
-    // reset para permitir re-upload do mesmo arquivo
     e.target.value = ''
   }
 
@@ -65,31 +66,45 @@ function DashboardCard({ dash, isAdmin, uploadingId, onUpload }) {
           </div>
         </div>
 
-        {/* Categoria + data de atualização */}
+        {/* Categoria + status do arquivo */}
         <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
           <span className={`text-xs border rounded-full px-2.5 py-0.5 font-medium ${colors.cat}`}>
             {dash.categoria}
           </span>
-          <span className="text-xs text-slate-400">
-            {fmtDate(dash.atualizado_em)}
-            {dash.tamanho_kb ? ` · ${dash.tamanho_kb} KB` : ''}
-          </span>
+          {hasFile ? (
+            <span className="text-xs text-slate-400">
+              {fmtDate(dash.atualizado_em)} · {dash.tamanho_kb} KB
+            </span>
+          ) : (
+            <span className="flex items-center gap-1 text-xs text-amber-600">
+              <AlertCircle className="w-3 h-3" />
+              Arquivo não enviado
+            </span>
+          )}
         </div>
       </div>
 
       {/* Botões de ação */}
       <div className="border-t border-slate-50 px-4 py-3 flex items-center gap-2">
-        <a
-          href={publicUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-white
-                     rounded-lg py-2 px-3 transition-opacity hover:opacity-90"
-          style={{ background: colors.border }}
-        >
-          <ExternalLink className="w-3.5 h-3.5" />
-          Abrir
-        </a>
+        {hasFile ? (
+          <a
+            href={getDashboardUrl(dash.storage_path)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold text-white
+                       rounded-lg py-2 px-3 transition-opacity hover:opacity-90"
+            style={{ background: colors.border }}
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            Abrir
+          </a>
+        ) : (
+          <div className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium
+                          text-slate-400 bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 cursor-default">
+            <ExternalLink className="w-3.5 h-3.5" />
+            Abrir
+          </div>
+        )}
 
         {isAdmin && (
           <>
@@ -106,13 +121,13 @@ function DashboardCard({ dash, isAdmin, uploadingId, onUpload }) {
               className="flex items-center justify-center gap-1.5 text-xs font-medium text-slate-600
                          bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg py-2 px-3
                          transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Substituir arquivo HTML"
+              title={hasFile ? 'Substituir arquivo HTML' : 'Enviar arquivo HTML'}
             >
               {isUploading
                 ? <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                 : <Upload className="w-3.5 h-3.5" />
               }
-              {isUploading ? 'Enviando…' : 'Atualizar'}
+              {isUploading ? 'Enviando…' : (hasFile ? 'Atualizar' : 'Enviar')}
             </button>
           </>
         )}
@@ -121,7 +136,7 @@ function DashboardCard({ dash, isAdmin, uploadingId, onUpload }) {
   )
 }
 
-// ─── Página principal (sem auth wrapper — feito em routes/index.jsx) ──────────
+// ─── Página principal ─────────────────────────────────────────────────────────
 export default function DashboardsPageContent() {
   const { profile } = useAuth()
   const toast = useToast()
@@ -133,12 +148,12 @@ export default function DashboardsPageContent() {
 
   const isAdmin = ADMIN_ROLES.includes(profile?.role)
 
-  // Categorias disponíveis a partir dos dados reais (mantém ordem de aparição)
   const categorias = ['Todos', ...new Set(dashboards.map(d => d.categoria))]
-
-  const filtered = catFiltro === 'Todos'
+  const filtered   = catFiltro === 'Todos'
     ? dashboards
     : dashboards.filter(d => d.categoria === catFiltro)
+
+  const pendingCount = dashboards.filter(d => d.tamanho_kb == null).length
 
   async function handleUpload({ id, storagePath, file }) {
     setUploadingId(id)
@@ -165,6 +180,17 @@ export default function DashboardsPageContent() {
       title="Dashboards"
       subtitle={`${filtered.length} dashboard${filtered.length !== 1 ? 's' : ''}`}
     >
+      {/* Aviso de arquivos pendentes (só para admin) */}
+      {isAdmin && pendingCount > 0 && (
+        <div className="mb-5 flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+          <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-700">
+            <span className="font-semibold">{pendingCount} dashboard{pendingCount !== 1 ? 's' : ''} sem arquivo.</span>
+            {' '}Clique em <strong>Enviar</strong> em cada card para fazer o upload do HTML.
+          </p>
+        </div>
+      )}
+
       {/* Filtro por categoria */}
       {dashboards.length > 0 && (
         <div className="flex items-center gap-2 mb-5 overflow-x-auto pb-1">
@@ -193,7 +219,7 @@ export default function DashboardsPageContent() {
         <div className="bg-white rounded-xl border border-slate-200">
           <EmptyState
             title="Nenhum dashboard disponível"
-            description="Os dashboards aparecerão aqui após serem cadastrados e carregados no Storage."
+            description="Os dashboards aparecerão aqui após serem cadastrados."
           />
         </div>
       ) : (
