@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useUsers, useCreateUser, useUpdateUser } from '@/hooks/useUsers'
 import Spinner from '@/components/ui/Spinner'
-import Badge from '@/components/ui/Badge'
 import Toggle from '@/components/ui/Toggle'
 import Modal from '@/components/ui/Modal'
 import FormField from '@/components/form/FormField'
@@ -102,9 +101,15 @@ export default function UsersTab() {
                   <td className="px-4 py-3 font-medium text-slate-800">{u.nome || '—'}</td>
                   <td className="px-4 py-3 text-slate-600">{u.email}</td>
                   <td className="px-4 py-3">
-                    <Badge variant={ROLE_VARIANT[u.role] || 'slate'}>
-                      {ROLE_OPTIONS.find(r => r.value === u.role)?.label || u.role}
-                    </Badge>
+                    <select
+                      value={u.role || 'cs'}
+                      onChange={e => updateUser.mutate({ id: u.id, role: e.target.value })}
+                      className="text-xs px-2 py-1.5 border border-slate-200 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    >
+                      {ROLE_OPTIONS.map(r => (
+                        <option key={r.value} value={r.value}>{r.label}</option>
+                      ))}
+                    </select>
                   </td>
                   <td className="px-4 py-3 text-center">
                     <Toggle

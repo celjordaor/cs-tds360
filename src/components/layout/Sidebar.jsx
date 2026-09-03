@@ -5,7 +5,7 @@ import { getInitials } from '@/lib/utils'
 
 const NAV_ITEMS = [
   { label: 'Analytics CS',      icon: BarChart2,   to: '/analytics',  roles: ['super_admin','admin','manager'] },
-  { label: 'Dashboards',        icon: TrendingUp,  to: '/dashboards', roles: ['super_admin','admin','manager'] },
+  { label: 'Dashboards',        icon: TrendingUp,  to: '/dashboards', roles: ['super_admin','admin','manager','cs'] },
   { label: 'Customer Success',  icon: Users,       to: '/clients',    roles: ['super_admin','admin','manager','cs'] },
   { label: 'Configurações',     icon: Settings,    to: '/settings',   roles: ['super_admin','admin'] },
 ]
