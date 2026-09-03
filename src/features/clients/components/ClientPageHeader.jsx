@@ -53,9 +53,9 @@ export default function ClientPageHeader({ client, project, contacts = [], onBac
   }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden mb-5 shadow-sm">
+    <div className="bg-white border border-slate-200 rounded-xl mb-5 shadow-sm">
       {/* Barra de acento laranja */}
-      <div className="h-1 bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600" />
+      <div className="h-1 bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 rounded-t-xl" />
 
       <div className="px-5 py-3">
         {/* Linha principal */}

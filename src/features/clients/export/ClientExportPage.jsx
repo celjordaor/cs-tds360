@@ -165,6 +165,18 @@ export default function ClientExportPage() {
 
   const exportDate = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 
+  // Define document.title para nomear o arquivo ao salvar como PDF
+  useEffect(() => {
+    if (!client) return
+    const today = new Date()
+    const dd   = String(today.getDate()).padStart(2, '0')
+    const mm   = String(today.getMonth() + 1).padStart(2, '0')
+    const aaaa = today.getFullYear()
+    const nome = client.fantasia || client.razao_social
+    document.title = `TDS - ${nome} - Resumo onboarding - ${dd}-${mm}-${aaaa}`
+    return () => { document.title = 'Portal CS TDSOFT' }
+  }, [client])
+
   useEffect(() => {
     if (autoprint && ready) {
       const t = setTimeout(() => window.print(), 600)
