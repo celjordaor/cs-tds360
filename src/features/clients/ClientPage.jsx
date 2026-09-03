@@ -1,5 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useClient, useProject, useContacts, useDeleteClient } from '@/hooks/useClients'
+import { useClientUsers } from '@/hooks/useClientUsers'
+import { useEmissoras } from '@/hooks/useEmissoras'
 import { useToast } from '@/components/shared/ToastContext'
 import { RequireAuth } from '@/routes/index'
 import AppLayout from '@/components/layout/AppLayout'
@@ -7,10 +9,11 @@ import Spinner from '@/components/ui/Spinner'
 import ClientPageHeader from './components/ClientPageHeader'
 import ProjectTab from './tabs/ProjectTab'
 import EmissorasTab from './tabs/EmissorasTab'
-import ComingSoon from '@/components/shared/ComingSoon'
 import ConfigTecnicaTab from './tabs/ConfigTecnicaTab'
 import UsuariosClienteTab from './tabs/UsuariosClienteTab'
 import AlertasTab from './tabs/AlertasTab'
+import ComingSoon from '@/components/shared/ComingSoon'
+import { generateMarkdown } from './export/generateMarkdown'
 
 const TABS = [
   { id: 'projeto',   label: 'Projeto'       },
@@ -35,9 +38,11 @@ function ClientPageInner() {
   const navigate = useNavigate()
   const { toast } = useToast()
 
-  const { data: client, isLoading: loadingClient } = useClient(id)
-  const { data: project, isLoading: loadingProject } = useProject(id)
-  const { data: contacts = [] } = useContacts(project?.id)
+  const { data: client,      isLoading: loadingClient  } = useClient(id)
+  const { data: project,     isLoading: loadingProject } = useProject(id)
+  const { data: contacts = []  } = useContacts(project?.id)
+  const { data: clientUsers = [] } = useClientUsers(project?.id)
+  const { data: emissoras   = [] } = useEmissoras(project?.id)
   const deleteClient = useDeleteClient()
 
   const activeTab = new URLSearchParams(window.location.search).get('tab') || 'projeto'
@@ -56,6 +61,25 @@ function ClientPageInner() {
     }
   }
 
+  function handleExportMD() {
+    if (!client) return
+    const md = generateMarkdown({ client, project, contacts, clientUsers, emissoras })
+    const slug = (client.fantasia || client.razao_social)
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+    const filename = `ficha-${slug}.md`
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' })
+    const url  = URL.createObjectURL(blob)
+    const a    = document.createElement('a')
+    a.href     = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    toast({ type: 'success', message: `Markdown exportado: ${filename}` })
+  }
+
   if (loadingClient) {
     return <div className="flex justify-center py-20"><Spinner size="lg" /></div>
   }
@@ -72,6 +96,7 @@ function ClientPageInner() {
         onBack={() => navigate('/clients')}
         onDelete={handleDeleteClient}
         isDeleting={deleteClient.isPending}
+        onExportMD={handleExportMD}
       />
 
       {/* Tabs */}

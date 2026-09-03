@@ -1,25 +1,52 @@
-import { useState } from 'react'
-import { ChevronLeft, Building2, User, Star, MapPin, Trash2, Loader2 } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ChevronLeft, Building2, User, Star, MapPin, Trash2, Loader2, FileDown, FileText, ChevronDown } from 'lucide-react'
 import StatusBadge from './StatusBadge'
 
 /**
  * ClientPageHeader — cabeçalho da tela de cliente.
  *
  * Props:
- *   client     — objeto da tabela clients
- *   project    — objeto da tabela projects
- *   contacts   — array de contacts
- *   onBack     — fn ao clicar em voltar
- *   onDelete   — fn async chamada ao confirmar exclusão (opcional)
- *   isDeleting — boolean de loading durante exclusão (opcional)
+ *   client      — objeto da tabela clients
+ *   project     — objeto da tabela projects
+ *   contacts    — array de contacts
+ *   onBack      — fn ao clicar em voltar
+ *   onDelete    — fn async chamada ao confirmar exclusão (opcional)
+ *   isDeleting  — boolean de loading durante exclusão (opcional)
+ *   onExportMD  — fn para download do Markdown (opcional)
  */
-export default function ClientPageHeader({ client, project, contacts = [], onBack, onDelete, isDeleting }) {
+export default function ClientPageHeader({ client, project, contacts = [], onBack, onDelete, isDeleting, onExportMD }) {
+  const navigate    = useNavigate()
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [exportOpen,    setExportOpen]    = useState(false)
+  const exportRef = useRef(null)
 
   const sponsor  = contacts.find(c => c.is_sponsor)
   const sistemas = project?.sistemas_contratados ?? []
   const csNome   = project?.responsavel_cs?.nome
   const location = [client.cidade, client.estado].filter(Boolean).join(' · ')
+
+  // Fecha dropdown ao clicar fora
+  useEffect(() => {
+    if (!exportOpen) return
+    function handleClick(e) {
+      if (exportRef.current && !exportRef.current.contains(e.target)) {
+        setExportOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [exportOpen])
+
+  function handleExportPDF() {
+    setExportOpen(false)
+    window.open(`/clients/${client.id}/export?autoprint=1`, '_blank')
+  }
+
+  function handleExportMD() {
+    setExportOpen(false)
+    onExportMD?.()
+  }
 
   async function handleConfirmDelete() {
     if (onDelete) await onDelete()
@@ -68,42 +95,84 @@ export default function ClientPageHeader({ client, project, contacts = [], onBac
             </div>
           </div>
 
-          {/* Direita: botão excluir */}
-          {onDelete && (
-            <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
-              {confirmDelete ? (
-                <>
-                  <span className="text-xs text-slate-500 whitespace-nowrap">Confirmar exclusão?</span>
+          {/* Direita: exportar + excluir */}
+          <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
+
+            {/* Dropdown exportar */}
+            <div className="relative" ref={exportRef}>
+              <button
+                onClick={() => setExportOpen(v => !v)}
+                className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+              >
+                <FileDown className="w-3 h-3" />
+                Exportar
+                <ChevronDown className="w-3 h-3 ml-0.5 text-slate-400" />
+              </button>
+
+              {exportOpen && (
+                <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden">
                   <button
-                    onClick={() => setConfirmDelete(false)}
-                    disabled={isDeleting}
-                    className="px-2.5 py-1 text-xs font-medium text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+                    onClick={handleExportPDF}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs text-slate-700 hover:bg-orange-50 hover:text-orange-700 transition-colors"
                   >
-                    Cancelar
+                    <FileDown className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" />
+                    <div className="text-left">
+                      <div className="font-medium">PDF</div>
+                      <div className="text-[10px] text-slate-400">Abre para impressão</div>
+                    </div>
                   </button>
+                  <div className="border-t border-slate-100" />
                   <button
-                    onClick={handleConfirmDelete}
-                    disabled={isDeleting}
-                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50"
+                    onClick={handleExportMD}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs text-slate-700 hover:bg-slate-50 transition-colors"
                   >
-                    {isDeleting
-                      ? <Loader2 className="w-3 h-3 animate-spin" />
-                      : <Trash2 className="w-3 h-3" />
-                    }
-                    Excluir
+                    <FileText className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                    <div className="text-left">
+                      <div className="font-medium">Markdown</div>
+                      <div className="text-[10px] text-slate-400">Para base de conhecimento</div>
+                    </div>
                   </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => setConfirmDelete(true)}
-                  className="p-1.5 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors"
-                  title="Excluir cliente"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                </div>
               )}
             </div>
-          )}
+
+            {/* Botão excluir */}
+            {onDelete && (
+              <>
+                {confirmDelete ? (
+                  <>
+                    <span className="text-xs text-slate-500 whitespace-nowrap">Confirmar exclusão?</span>
+                    <button
+                      onClick={() => setConfirmDelete(false)}
+                      disabled={isDeleting}
+                      className="px-2.5 py-1 text-xs font-medium text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={handleConfirmDelete}
+                      disabled={isDeleting}
+                      className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      {isDeleting
+                        ? <Loader2 className="w-3 h-3 animate-spin" />
+                        : <Trash2 className="w-3 h-3" />
+                      }
+                      Excluir
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => setConfirmDelete(true)}
+                    className="p-1.5 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+                    title="Excluir cliente"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </>
+            )}
+          </div>
         </div>
 
         {/* Linha de pills */}

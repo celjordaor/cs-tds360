@@ -4,6 +4,7 @@ import ForgotPassword  from '@/features/auth/ForgotPassword'
 import ResetPassword   from '@/features/auth/ResetPassword'
 import ClientsListPage from '@/features/clients/ClientsListPage'
 import ClientPage      from '@/features/clients/ClientPage'
+import ClientExportPage from '@/features/clients/export/ClientExportPage'
 import SettingsPage    from '@/features/settings/SettingsPage'
 import {
   RequireAuth,
@@ -26,8 +27,9 @@ export default function App() {
         <Route path="/" element={<RoleHome />} />
 
         {/* Clientes */}
-        <Route path="/clients"     element={<RequireAuth><ClientsListPage /></RequireAuth>} />
-        <Route path="/clients/:id" element={<RequireAuth><ClientPage /></RequireAuth>} />
+        <Route path="/clients"             element={<RequireAuth><ClientsListPage /></RequireAuth>} />
+        <Route path="/clients/:id"         element={<RequireAuth><ClientPage /></RequireAuth>} />
+        <Route path="/clients/:id/export"  element={<RequireAuth><ClientExportPage /></RequireAuth>} />
 
         {/* Configurações */}
         <Route path="/settings" element={
