@@ -125,28 +125,30 @@ function DashboardCard({ dash, isAdmin, uploadingId, onUpload, onToggleRole }) {
       </div>
 
 
-      {/* Chips de acesso por role */}
-      <div className="px-4 pb-3 flex items-center gap-1.5 flex-wrap">
-        {ALL_ROLES.map(role => {
-          const cfg       = ROLE_CHIP[role]
-          const hasAccess = (dash.roles_acesso ?? ALL_ROLES).includes(role)
-          const locked    = role === 'super_admin'
-          const clickable = isAdmin && !locked
-          return (
-            <button
-              key={role}
-              disabled={!clickable}
-              onClick={() => clickable && onToggleRole && onToggleRole(role, hasAccess)}
-              title={locked ? 'Super Admin sempre tem acesso' : (hasAccess ? `Remover acesso: ${cfg.label}` : `Liberar acesso: ${cfg.label}`)}
-              className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-all
-                ${hasAccess ? cfg.active : cfg.inactive}
-                ${clickable ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`}
-            >
-              {cfg.label}
-            </button>
-          )
-        })}
-      </div>
+      {/* Chips de acesso por role — visível apenas para admin */}
+      {isAdmin && (
+        <div className="px-4 pb-3 flex items-center gap-1.5 flex-wrap">
+          {ALL_ROLES.map(role => {
+            const cfg       = ROLE_CHIP[role]
+            const hasAccess = (dash.roles_acesso ?? ALL_ROLES).includes(role)
+            const locked    = role === 'super_admin'
+            const clickable = !locked
+            return (
+              <button
+                key={role}
+                disabled={!clickable}
+                onClick={() => clickable && onToggleRole && onToggleRole(role, hasAccess)}
+                title={locked ? 'Super Admin sempre tem acesso' : (hasAccess ? `Remover acesso: ${cfg.label}` : `Liberar acesso: ${cfg.label}`)}
+                className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-all
+                  ${hasAccess ? cfg.active : cfg.inactive}
+                  ${clickable ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`}
+              >
+                {cfg.label}
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       {/* Botões de ação */}
       <div className="border-t border-slate-50 px-4 py-3 flex items-center gap-2">
@@ -217,6 +219,11 @@ export default function DashboardsPageContent() {
 
   const pendingCount = dashboards.filter(d => d.tamanho_kb == null).length
 
+  // Filtra cards visíveis: admin vê todos; demais veem apenas dashboards cujo roles_acesso inclui seu role
+  const visibleDashboards = dashboards.filter(d =>
+    isAdmin || (d.roles_acesso ?? ALL_ROLES).includes(profile?.role)
+  )
+
   async function handleUpload({ id, storagePath, file }) {
     setUploadingId(id)
     try {
@@ -250,7 +257,7 @@ export default function DashboardsPageContent() {
   return (
     <PageWrapper
       title="Dashboards"
-      subtitle={`${dashboards.length} dashboard${dashboards.length !== 1 ? 's' : ''}`}
+      subtitle={`${visibleDashboards.length} dashboard${visibleDashboards.length !== 1 ? 's' : ''}`}
     >
       {/* Aviso de arquivos pendentes (só para admin) */}
       {isAdmin && pendingCount > 0 && (
@@ -268,7 +275,7 @@ export default function DashboardsPageContent() {
         <div className="py-20 flex justify-center">
           <Spinner size="lg" />
         </div>
-      ) : dashboards.length === 0 ? (
+      ) : visibleDashboards.length === 0 ? (
         <div className="bg-white rounded-xl border border-slate-200">
           <EmptyState
             title="Nenhum dashboard disponível"
@@ -277,7 +284,7 @@ export default function DashboardsPageContent() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {dashboards.map(dash => (
+          {visibleDashboards.map(dash => (
             <DashboardCard
               key={dash.id}
               dash={dash}
