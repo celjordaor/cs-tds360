@@ -73,7 +73,7 @@ export default function AccessProfilesTab() {
                           checked={isActive}
                           disabled={isDisabled}
                           onChange={() => toggleRole(screen, r.value)}
-                          className="w-4 h-4 rounded border-slate-300 text-orange-500
+                          className="w-4 h-4 rounded border-slate-300 accent-orange-500
                                      focus:ring-orange-500 focus:ring-offset-0
                                      disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                         />
