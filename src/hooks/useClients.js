@@ -129,7 +129,20 @@ export function useUpdateClient() {
       const { error } = await supabase.from('clients').update(clean).eq('id', id)
       if (error) throw error
     },
-    onSuccess: (_, v) => qc.invalidateQueries({ queryKey: [...KEY, v.id] }),
+    onMutate: async ({ id, ...data }) => {
+      await qc.cancelQueries({ queryKey: [...KEY, id] })
+      const previous = qc.getQueryData([...KEY, id])
+      const clean = Object.fromEntries(Object.entries(data).filter(([k]) => CLIENT_COLS.has(k)))
+      qc.setQueryData([...KEY, id], old => old ? { ...old, ...clean } : old)
+      return { previous, id }
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous !== undefined) qc.setQueryData([...KEY, ctx.id], ctx.previous)
+    },
+    onSettled: (_, __, vars) => {
+      qc.invalidateQueries({ queryKey: [...KEY, vars.id] })
+      qc.invalidateQueries({ queryKey: KEY })
+    },
   })
 }
 
@@ -137,11 +150,25 @@ export function useUpdateProject() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, ...data }) => {
+      // client_id vem no spread do pForm mas é filtrado por PROJECT_COLS — não vai ao banco
       const clean = Object.fromEntries(Object.entries(data).filter(([k]) => PROJECT_COLS.has(k)))
       const { error } = await supabase.from('projects').update(clean).eq('id', id)
       if (error) throw error
     },
-    onSuccess: (_, v) => qc.invalidateQueries({ queryKey: ['projects'] }),
+    onMutate: async ({ id, client_id, ...data }) => {
+      await qc.cancelQueries({ queryKey: ['projects', client_id] })
+      const previous = qc.getQueryData(['projects', client_id])
+      const clean = Object.fromEntries(Object.entries(data).filter(([k]) => PROJECT_COLS.has(k)))
+      qc.setQueryData(['projects', client_id], old => old ? { ...old, ...clean } : old)
+      return { previous, client_id }
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous !== undefined) qc.setQueryData(['projects', ctx.client_id], ctx.previous)
+    },
+    onSettled: (_, __, vars) => {
+      qc.invalidateQueries({ queryKey: ['projects', vars.client_id] })
+      qc.invalidateQueries({ queryKey: KEY })
+    },
   })
 }
 

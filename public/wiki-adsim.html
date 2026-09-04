@@ -1,0 +1,2831 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wiki — Adsim & Mídia+</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --orange: #E8622A;
+    --orange-light: #FDF0EA;
+    --orange-dark: #BF4D1F;
+    --navy: #1A2744;
+    --navy-mid: #2C3E6B;
+    --bg: #F5F6FA;
+    --surface: #FFFFFF;
+    --border: #E3E7F0;
+    --text: #1C2333;
+    --text-muted: #64748B;
+    --text-light: #94A3B8;
+    --green: #16A34A;
+    --green-bg: #F0FDF4;
+    --blue: #2563EB;
+    --blue-bg: #EFF6FF;
+    --amber: #D97706;
+    --amber-bg: #FFFBEB;
+    --sidebar-w: 280px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--navy);
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    overflow-y: auto;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-header {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--orange);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .logo-text { color: white; font-size: 15px; font-weight: 600; }
+  .logo-sub { color: rgba(255,255,255,0.4); font-size: 11px; letter-spacing: 0.05em; }
+
+  .sidebar-search {
+    margin-top: 16px;
+    position: relative;
+  }
+
+  .sidebar-search input {
+    width: 100%;
+    padding: 8px 12px 8px 34px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    color: white;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .sidebar-search input::placeholder { color: rgba(255,255,255,0.35); }
+  .sidebar-search input:focus { border-color: var(--orange); }
+
+  .sidebar-search svg {
+    position: absolute;
+    left: 10px; top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255,255,255,0.35);
+    pointer-events: none;
+  }
+
+  .nav { padding: 12px 0 24px; flex: 1; }
+
+  .nav-section { margin-bottom: 6px; }
+
+  .nav-section-label {
+    padding: 8px 20px 4px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 20px;
+    color: rgba(255,255,255,0.65);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 13px;
+    border-left: 2px solid transparent;
+    user-select: none;
+  }
+
+  .nav-item:hover { color: white; background: rgba(255,255,255,0.06); }
+
+  .nav-item.active {
+    color: white;
+    background: rgba(232,98,42,0.18);
+    border-left-color: var(--orange);
+  }
+
+  .nav-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    flex-shrink: 0;
+  }
+
+  .nav-item.active .nav-dot { background: var(--orange); }
+
+  /* MAIN */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 40px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .breadcrumb {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .breadcrumb span { color: var(--text); font-weight: 500; }
+
+  .search-main {
+    margin-left: auto;
+    position: relative;
+  }
+
+  .search-main input {
+    width: 280px;
+    padding: 7px 12px 7px 34px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--text);
+    background: var(--bg);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .search-main input:focus {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px rgba(232,98,42,0.12);
+  }
+
+  .search-main svg {
+    position: absolute;
+    left: 10px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-light);
+    pointer-events: none;
+  }
+
+  .content {
+    padding: 40px;
+    max-width: 860px;
+  }
+
+  /* SEARCH RESULTS */
+  .search-results {
+    display: none;
+    padding: 32px 40px;
+    max-width: 860px;
+  }
+
+  .search-results.active { display: block; }
+
+  .search-count {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+
+  .search-result-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .search-result-item:hover {
+    border-color: var(--orange);
+    box-shadow: 0 2px 12px rgba(232,98,42,0.1);
+  }
+
+  .result-category {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin-bottom: 4px;
+  }
+
+  .result-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+
+  .result-snippet {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  mark { background: #FEF3C7; color: var(--text); border-radius: 2px; padding: 0 2px; }
+
+  /* PAGE CONTENT */
+  .page-section { display: none; }
+  .page-section.active { display: block; }
+
+  .page-hero {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    border-radius: 14px;
+    padding: 32px 36px;
+    margin-bottom: 32px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .page-hero::after {
+    content: '';
+    position: absolute;
+    right: -40px; top: -40px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(232,98,42,0.15);
+  }
+
+  .page-hero-tag {
+    display: inline-block;
+    background: rgba(232,98,42,0.25);
+    color: #FFA07A;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+
+  .page-hero h1 { font-size: 24px; font-weight: 700; line-height: 1.2; margin-bottom: 8px; }
+  .page-hero p { color: rgba(255,255,255,0.65); font-size: 14px; max-width: 500px; }
+
+  /* CARDS GRID */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+
+  .card:hover { border-color: var(--orange); box-shadow: 0 4px 16px rgba(232,98,42,0.1); transform: translateY(-1px); }
+
+  .card-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .card-icon.orange { background: var(--orange-light); }
+  .card-icon.blue { background: var(--blue-bg); }
+  .card-icon.green { background: var(--green-bg); }
+  .card-icon.amber { background: var(--amber-bg); }
+
+  .card h3 { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .card p { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+
+  /* CONTENT BLOCKS */
+  .content-block { margin-bottom: 32px; }
+
+  .content-block h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .content-block h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 10px;
+    margin-top: 20px;
+  }
+
+  .content-block p { margin-bottom: 10px; color: var(--text); }
+
+  /* TABLES */
+  .table-wrap { overflow-x: auto; margin-bottom: 16px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead th {
+    background: var(--bg);
+    padding: 9px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--bg); }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .badge-green { background: var(--green-bg); color: var(--green); }
+  .badge-amber { background: var(--amber-bg); color: var(--amber); }
+  .badge-blue { background: var(--blue-bg); color: var(--blue); }
+  .badge-orange { background: var(--orange-light); color: var(--orange-dark); }
+  .badge-gray { background: #F1F5F9; color: #64748B; }
+
+  /* CALLOUTS */
+  .callout {
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    display: flex;
+    gap: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .callout-warn { background: var(--amber-bg); border: 1px solid #FCD34D; }
+  .callout-tip { background: var(--green-bg); border: 1px solid #86EFAC; }
+  .callout-info { background: var(--blue-bg); border: 1px solid #BFDBFE; }
+
+  /* FUNNEL STEPS */
+  .funnel-steps { display: flex; flex-direction: column; gap: 2px; margin: 16px 0; }
+
+  .funnel-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    transition: border-color 0.15s;
+  }
+
+  .funnel-step:hover { border-color: var(--orange); }
+
+  .funnel-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--navy);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .funnel-step-body h4 { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+  .funnel-step-body p { font-size: 12px; color: var(--text-muted); margin: 0; }
+
+  /* MILESTONE */
+  .milestones { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 16px 0; }
+
+  .milestone {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .milestone-num {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: var(--orange-light);
+    color: var(--orange-dark);
+    font-weight: 700;
+    font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .milestone h4 { font-size: 12px; font-weight: 600; }
+  .milestone p { font-size: 11px; color: var(--text-muted); margin: 0; }
+
+  /* TOGGLE CONFIG */
+  .toggle-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .toggle-item:last-child { border-bottom: none; }
+
+  .toggle-label h4 { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+  .toggle-label p { font-size: 11px; color: var(--text-muted); margin: 0; max-width: 480px; }
+
+  .toggle-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .toggle-on { background: #DCFCE7; color: #15803D; }
+  .toggle-off { background: #F1F5F9; color: #64748B; }
+
+  /* FLOW CHART */
+  .flow-chart {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow-x: auto;
+    padding: 20px 0;
+    margin: 16px 0;
+  }
+
+  .flow-node {
+    background: var(--navy);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    min-width: 100px;
+    white-space: nowrap;
+  }
+
+  .flow-node.orange { background: var(--orange); }
+
+  .flow-arrow {
+    color: var(--text-light);
+    padding: 0 6px;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  /* FOOTER */
+  .content-footer {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <div class="logo-icon">A</div>
+      <div>
+        <div class="logo-text">Adsim Wiki</div>
+        <div class="logo-sub">Base de Conhecimento</div>
+      </div>
+    </div>
+    <div class="sidebar-search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="sideSearch" placeholder="Buscar..." oninput="handleSearch(this.value)">
+    </div>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-section">
+      <div class="nav-section-label">Início</div>
+      <div class="nav-item active" onclick="showPage('home')">
+        <div class="nav-dot"></div>Visão Geral
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Adsim CRM</div>
+      <div class="nav-item" onclick="showPage('negocios')">
+        <div class="nav-dot"></div>Negócios
+      </div>
+      <div class="nav-item" onclick="showPage('atividades')">
+        <div class="nav-dot"></div>Atividades
+      </div>
+      <div class="nav-item" onclick="showPage('funil')">
+        <div class="nav-dot"></div>Funil de Vendas
+      </div>
+      <div class="nav-item" onclick="showPage('campos')">
+        <div class="nav-dot"></div>Campos e Preenchimento
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Mídia+</div>
+      <div class="nav-item" onclick="showPage('midia-plus')">
+        <div class="nav-dot"></div>Visão Geral Mídia+
+      </div>
+      <div class="nav-item" onclick="showPage('integracao')">
+        <div class="nav-dot"></div>Integração Adsim ↔ Mídia+
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Guias Passo a Passo</div>
+      <div class="nav-item" onclick="showPage('guia-negocio')">
+        <div class="nav-dot"></div>Criar Negócio e Atividade
+      </div>
+      <div class="nav-item" onclick="showPage('guia-aprovar-pi')">
+        <div class="nav-dot"></div>Aprovar Pedido de Inserção
+      </div>
+      <div class="nav-item" onclick="showPage('guia-temperatura')">
+        <div class="nav-dot"></div>Temperatura do Pipeline
+      </div>
+      <div class="nav-item" onclick="showPage('guia-metas')">
+        <div class="nav-dot"></div>Metas de Vendas
+      </div>
+      <div class="nav-item" onclick="showPage('guia-agrupadores')">
+        <div class="nav-dot"></div>Agrupadores de Linha
+      </div>
+      <div class="nav-item" onclick="showPage('guia-criar-produto')">
+        <div class="nav-dot"></div>Criar Produto no Portfólio
+      </div>
+      <div class="nav-item" onclick="showPage('config-sistema')">
+        <div class="nav-dot"></div>Configurações do Sistema
+      </div>
+      <div class="nav-item" onclick="showPage('guia-importacao-tabela-precos')">
+        <div class="nav-dot"></div>Importação de Tabela de Preços
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Operações de PI</div>
+      <div class="nav-item" onclick="showPage('guia-criar-pi')">
+        <div class="nav-dot"></div>Criar Pedido de Inserção
+      </div>
+      <div class="nav-item" onclick="showPage('guia-aprovar-pi')">
+        <div class="nav-dot"></div>Aprovar PI
+      </div>
+      <div class="nav-item" onclick="showPage('guia-email-pi')">
+        <div class="nav-dot"></div>Enviar PI por E-mail
+      </div>
+      <div class="nav-item" onclick="showPage('guia-materiais-pi')">
+        <div class="nav-dot"></div>Adicionar Materiais ao PI
+      </div>
+      <div class="nav-item" onclick="showPage('guia-anexar-pi')">
+        <div class="nav-dot"></div>Anexar Arquivos ao PI
+      </div>
+      <div class="nav-item" onclick="showPage('guia-periodo-pi')">
+        <div class="nav-dot"></div>Alterar Período de Veiculação
+      </div>
+      <div class="nav-item" onclick="showPage('guia-copiar-pi')">
+        <div class="nav-dot"></div>Copiar PI
+      </div>
+      <div class="nav-item" onclick="showPage('guia-pendencia-pi')">
+        <div class="nav-dot"></div>Editar Pendência do PI
+      </div>
+      <div class="nav-item" onclick="showPage('guia-excluir-pi')">
+        <div class="nav-dot"></div>Excluir PI
+      </div>
+      <div class="nav-item" onclick="showPage('guia-pdf-excel-pi')">
+        <div class="nav-dot"></div>Gerar PDF e Excel do PI
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Pipeline & CRM</div>
+      <div class="nav-item" onclick="showPage('guia-criar-pipeline')">
+        <div class="nav-dot"></div>Criar Pipeline
+      </div>
+      <div class="nav-item" onclick="showPage('guia-etapas-pipeline')">
+        <div class="nav-dot"></div>Adicionar Etapas à Pipeline
+      </div>
+      <div class="nav-item" onclick="showPage('guia-incluir-cliente')">
+        <div class="nav-dot"></div>Vincular Cliente ao Negócio
+      </div>
+      <div class="nav-item" onclick="showPage('guia-negocio-pi')">
+        <div class="nav-dot"></div>Gerar Negócio a partir do PI
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Configurações</div>
+      <div class="nav-item" onclick="showPage('config-pi')">
+        <div class="nav-dot"></div>Pedido de Inserção (PI)
+      </div>
+      <div class="nav-item" onclick="showPage('config-proposta')">
+        <div class="nav-dot"></div>Proposta do Negócio
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-label">Processos</div>
+      <div class="nav-item" onclick="showPage('fluxo')">
+        <div class="nav-dot"></div>Fluxo Comercial Completo
+      </div>
+      <div class="nav-item" onclick="showPage('onboarding')">
+        <div class="nav-dot"></div>Processo de Onboarding
+      </div>
+    </div>
+  </nav>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="breadcrumb" id="breadcrumb">
+      Wiki <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg> <span>Visão Geral</span>
+    </div>
+    <div class="search-main">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="mainSearch" placeholder="Pesquisar na base de conhecimento..." oninput="handleSearch(this.value)">
+    </div>
+  </div>
+
+  <!-- SEARCH RESULTS -->
+  <div class="search-results" id="searchResults">
+    <div class="search-count" id="searchCount"></div>
+    <div id="searchList"></div>
+  </div>
+
+  <!-- PAGES -->
+  <div id="pages">
+
+    <!-- HOME -->
+    <div class="page-section active content" id="page-home">
+      <div class="page-hero">
+        <div class="page-hero-tag">Base de Conhecimento</div>
+        <h1>Adsim & Mídia+<br>Plataforma ADS — TDSOFT</h1>
+        <p>CRM comercial e sistema de operação de mídia para veículos de comunicação. Navegue pelos módulos abaixo.</p>
+      </div>
+
+      <div class="cards-grid">
+        <div class="card" onclick="showPage('negocios')">
+          <div class="card-icon orange">💼</div>
+          <h3>Negócios</h3>
+          <p>Cadastro, tipos, campos obrigatórios e gestão de negociações comerciais.</p>
+        </div>
+        <div class="card" onclick="showPage('funil')">
+          <div class="card-icon blue">🔽</div>
+          <h3>Funil de Vendas</h3>
+          <p>5 etapas do pipeline, filtros, dashboard e boas práticas.</p>
+        </div>
+        <div class="card" onclick="showPage('atividades')">
+          <div class="card-icon green">📅</div>
+          <h3>Atividades</h3>
+          <p>Registro de visitas, ligações, notas e acompanhamento de negócios.</p>
+        </div>
+        <div class="card" onclick="showPage('fluxo')">
+          <div class="card-icon amber">🔄</div>
+          <h3>Fluxo Comercial</h3>
+          <p>Jornada completa do Adsim ao Mídia+ — da prospecção ao faturamento.</p>
+        </div>
+        <div class="card" onclick="showPage('guia-aprovar-pi')">
+          <div class="card-icon orange">✅</div>
+          <h3>Aprovar PI</h3>
+          <p>Aprovação individual ou em lote, mensagens do sistema e pontos de atenção.</p>
+        </div>
+        <div class="card" onclick="showPage('guia-temperatura')">
+          <div class="card-icon green">🌡️</div>
+          <h3>Temperatura do Pipeline</h3>
+          <p>Classificar etapas como Frio, Morno ou Quente para priorização comercial.</p>
+        </div>
+        <div class="card" onclick="showPage('config-pi')">
+          <div class="card-icon amber">⚙️</div>
+          <h3>Configurações PI</h3>
+          <p>Comportamentos do Pedido de Inserção, aprovações e integrações.</p>
+        </div>
+        <div class="card" onclick="showPage('guia-metas')">
+          <div class="card-icon green">🎯</div>
+          <h3>Metas de Vendas</h3>
+          <p>Criar e configurar metas por executivo, empresa, veículo, produto ou pipeline.</p>
+        </div>
+        <div class="card" onclick="showPage('guia-agrupadores')">
+          <div class="card-icon orange">📦</div>
+          <h3>Agrupadores de Linha</h3>
+          <p>Criar, editar e associar agrupadores para organizar linhas de entrega no Portfólio de Produtos.</p>
+        </div>
+        <div class="card" onclick="showPage('guia-criar-produto')">
+          <div class="card-icon blue">🏷️</div>
+          <h3>Criar Produto no Portfólio</h3>
+          <p>Cadastrar novo produto em Ofertas → Produtos: dados gerais, tipo, tags e segmentação.</p>
+        </div>
+        <div class="card" onclick="showPage('config-sistema')">
+          <div class="card-icon orange">⚙️</div>
+          <h3>Configurações do Sistema</h3>
+          <p>Todas as regras de comportamento do Adsim: aprovações, bloqueios, integrações e fluxos automáticos.</p>
+        </div>
+        <div class="card" onclick="showPage('onboarding')">
+          <div class="card-icon blue">🚀</div>
+          <h3>Onboarding</h3>
+          <p>Processo completo de implantação com 10 marcos e responsabilidades.</p>
+        </div>
+        <div class="card" onclick="showPage('guia-criar-pi')">
+          <div class="card-icon orange">📋</div>
+          <h3>Criar Pedido de Inserção</h3>
+          <p>Passo a passo para criar um novo PI do zero: veículo, praça, anunciante e dados comerciais.</p>
+        </div>
+        <div class="card" onclick="showPage('guia-email-pi')">
+          <div class="card-icon green">📧</div>
+          <h3>Enviar PI por E-mail</h3>
+          <p>Enviar o pedido ao cliente para aprovação formal com opções de desconto e autenticidade.</p>
+        </div>
+        <div class="card" onclick="showPage('guia-criar-pipeline')">
+          <div class="card-icon blue">🔀</div>
+          <h3>Criar Pipeline</h3>
+          <p>Como criar um novo funil de vendas e configurar suas etapas no Adsim CRM.</p>
+        </div>
+        <div class="card" onclick="showPage('guia-negocio-pi')">
+          <div class="card-icon orange">🔄</div>
+          <h3>PI → Negócio CRM</h3>
+          <p>Gerar negócio no CRM a partir de um PI existente — fluxo inverso ao tradicional.</p>
+        </div>
+        <div class="card" onclick="showPage('guia-pdf-excel-pi')">
+          <div class="card-icon green">📄</div>
+          <h3>Gerar PDF e Excel do PI</h3>
+          <p>Exportar o mapa de mídia em 10 modelos de PDF ou em planilha Excel.</p>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>🏢 Sobre a Plataforma ADS</h2>
+        <p>A TDSOFT desenvolve a <strong>Plataforma ADS</strong>, ecossistema completo para veículos de mídia. O Adsim é o módulo de CRM comercial; o Mídia+ cuida da operação, tráfego e faturamento.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Produto</th><th>Função</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Adsim</strong></td><td>CRM comercial — vendas de publicidade</td></tr>
+              <tr><td><strong>Mídia+</strong></td><td>Operação e gestão de mídia (tráfego, OPEC)</td></tr>
+              <tr><td><strong>AdChecking</strong></td><td>Fiscalização e checagem de exibições</td></tr>
+              <tr><td><strong>AdDigital</strong></td><td>Gestão de mídia digital</td></tr>
+              <tr><td><strong>SpotHub</strong></td><td>Automação de PI via IA (leitura de e-mail/PDF)</td></tr>
+              <tr><td><strong>AdReport</strong></td><td>Relatórios e analytics</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEGÓCIOS -->
+    <div class="page-section content" id="page-negocios">
+      <div class="page-hero">
+        <div class="page-hero-tag">Adsim CRM</div>
+        <h1>Negócios</h1>
+        <p>Cadastro e gestão de negociações comerciais. Menu principal → Vendas → Negócios.</p>
+      </div>
+
+      <div class="content-block">
+        <h2>💼 Tipos de Negociação</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tipo</th><th>Definição</th><th>Observação</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="badge badge-orange">Venda Pontual</span></td>
+                <td>Qualquer venda esporádica que não configure uma contratação</td>
+                <td>Se o mesmo cliente negociar mais de um produto com datas distintas, criar um negócio para cada</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-blue">Contrato</span></td>
+                <td>Negociação com vigência mínima de 3 meses — valores fechados contratualmente (100% garantidos)</td>
+                <td>Se houver variação nos produtos, configurar como Venda Pontual com um negócio por mês</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-warn">
+          <span class="callout-icon">⚠️</span>
+          <span>Nunca agrupe múltiplas vendas distintas em um único negócio. Criar <strong>um negócio por operação</strong> é a regra fundamental.</span>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>📝 Como Criar um Negócio</h2>
+        <div class="funnel-steps">
+          <div class="funnel-step">
+            <div class="funnel-num">1</div>
+            <div class="funnel-step-body">
+              <h4>Acessar o Pipeline</h4>
+              <p>Menu principal → Vendas → Pipeline de Negócios</p>
+            </div>
+          </div>
+          <div class="funnel-step">
+            <div class="funnel-num">2</div>
+            <div class="funnel-step-body">
+              <h4>Clicar em NOVO</h4>
+              <p>Botão no canto superior direito da tela de Pipeline de Negócios</p>
+            </div>
+          </div>
+          <div class="funnel-step">
+            <div class="funnel-num">3</div>
+            <div class="funnel-step-body">
+              <h4>Preencher o formulário</h4>
+              <p>Tipo de negociação, Organização, Produto, Etapa, Data Basket e demais campos obrigatórios</p>
+            </div>
+          </div>
+          <div class="funnel-step">
+            <div class="funnel-num">4</div>
+            <div class="funnel-step-body">
+              <h4>Salvar e ir para o negócio</h4>
+              <p>Manter "Ir para o negócio" ativado para abrir diretamente a tela de edição</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-tip">
+          <span class="callout-icon">💡</span>
+          <span>Quando o cliente tem agência vinculada, o campo "Qual a agência" é preenchido automaticamente.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAMPOS -->
+    <div class="page-section content" id="page-campos">
+      <div class="page-hero">
+        <div class="page-hero-tag">Adsim CRM</div>
+        <h1>Campos de Preenchimento</h1>
+        <p>Campos obrigatórios, condicionais e orientações para cada etapa.</p>
+      </div>
+
+      <div class="content-block">
+        <h2>📋 Campos do Negócio</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Campo</th><th>Obrigatoriedade</th><th>Orientação</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Tipo de Negociação</strong></td><td><span class="badge badge-orange">Obrigatório</span></td><td>Definir: Contrato ou Venda Pontual</td></tr>
+              <tr><td><strong>Organização</strong></td><td><span class="badge badge-orange">Obrigatório</span></td><td>Nome da empresa em negociação</td></tr>
+              <tr><td><strong>Agência</strong></td><td><span class="badge badge-amber">Condicional</span></td><td>Obrigatório se a negociação possuir agência</td></tr>
+              <tr><td><strong>Pessoa de Contato</strong></td><td><span class="badge badge-amber">Condicional</span></td><td>Opcional na oportunidade; obrigatório a partir do 1º contato</td></tr>
+              <tr><td><strong>Produto(s)</strong></td><td><span class="badge badge-orange">Obrigatório</span></td><td>Sem produto definido → usar "Mídia Avulsa" como placeholder</td></tr>
+              <tr><td><strong>Data Basket</strong></td><td><span class="badge badge-orange">Obrigatório</span></td><td>Mês em que o negócio entra no Basket (previsão de receita)</td></tr>
+              <tr><td><strong>Valor</strong></td><td><span class="badge badge-amber">Condicional</span></td><td>Obrigatório nas etapas "Em Negociação" e "Em Fechamento"</td></tr>
+              <tr><td><strong>Etapa</strong></td><td><span class="badge badge-orange">Obrigatório</span></td><td>Em qual etapa do funil o negócio se encontra</td></tr>
+              <tr><td><strong>Origem</strong></td><td><span class="badge badge-gray">Importante</span></td><td>De onde veio a oportunidade (ex: Carteira, Prospecção ativa)</td></tr>
+              <tr><td><strong>Título do Negócio</strong></td><td><span class="badge badge-gray">Importante</span></td><td>Nome que identifica rapidamente a oportunidade no pipeline</td></tr>
+              <tr><td><strong>Período de Veiculação</strong></td><td><span class="badge badge-gray">Importante</span></td><td>Datas de início e fim previstas — base para geração de proposta</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Tags de Segmento</h3>
+        <p>Opcionais, padronizadas para toda a equipe. Para adicionar nova TAG, solicitar ao Gestor Comercial.</p>
+        <p style="color:var(--text-muted); font-size:12px; margin-top:8px;">Comércio · Varejo · Financeiro · Higiene & Beleza · Farmácia · Educação · Saúde · Serviços · Alimentação · Segurança · Público · Telecom · Turismo · Bebidas · Automotivo · Mídia · Jogos · Imobiliário · Pet · Combustíveis · Vestuário & Acessórios · Tecnologia · Brinquedos · Indústria · Agropecuária</p>
+      </div>
+    </div>
+
+    <!-- ATIVIDADES -->
+    <div class="page-section content" id="page-atividades">
+      <div class="page-hero">
+        <div class="page-hero-tag">Adsim CRM</div>
+        <h1>Atividades</h1>
+        <p>Registro de contatos, visitas, notas e propostas vinculadas a negócios.</p>
+      </div>
+
+      <div class="content-block">
+        <h2>📅 Tipos de Ação no Negócio</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Ação</th><th>Descrição</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Adicionar Atividade</strong></td><td>Vincula uma atividade planejada ou realizada ao negócio (visita, ligação, e-mail, etc.)</td></tr>
+              <tr><td><strong>Tomar Nota</strong></td><td>Organização pessoal: pauta de reunião, relato de cliente, briefing, etc.</td></tr>
+              <tr><td><strong>Proposta</strong></td><td>Formulação de propostas comerciais pelo sistema (3 possibilidades)</td></tr>
+              <tr><td><strong>Enviar Arquivos</strong></td><td>Anexa arquivos ao negócio: pacote comercial, projetos, etc.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-warn">
+          <span class="callout-icon">⚠️</span>
+          <span><strong>Regra:</strong> Todas as atividades precisam estar vinculadas a um negócio.</span>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>📋 Campos Obrigatórios da Atividade</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Campo</th><th>Orientação</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Organização</strong></td><td>Informe a empresa relacionada à atividade</td></tr>
+              <tr><td><strong>Pessoa Envolvida</strong></td><td>Contato na empresa ou agência</td></tr>
+              <tr><td><strong>Tipo da Atividade</strong></td><td>Selecione: visita, ligação, e-mail, reunião, etc.</td></tr>
+              <tr><td><strong>Título</strong></td><td>Apague a sugestão automática e informe o que foi/será realizado</td></tr>
+              <tr><td><strong>Data e Horário</strong></td><td>Data e hora prevista para execução</td></tr>
+              <tr><td><strong>Observação</strong></td><td>Como a atividade foi/será realizada — <strong>obrigatório</strong></td></tr>
+              <tr><td>Sincronizar Agenda</td><td>Opcional: Google Agenda ou Microsoft Calendar</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- FUNIL -->
+    <div class="page-section content" id="page-funil">
+      <div class="page-hero">
+        <div class="page-hero-tag">Adsim CRM</div>
+        <h1>Funil de Vendas</h1>
+        <p>5 etapas do pipeline, filtros, dashboard e boas práticas comerciais.</p>
+      </div>
+
+      <div class="content-block">
+        <h2>🔽 Etapas do Funil</h2>
+        <div class="funnel-steps">
+          <div class="funnel-step">
+            <div class="funnel-num">1</div>
+            <div class="funnel-step-body">
+              <h4>Prospecção / Oportunidade</h4>
+              <p>Potenciais negócios observados ou sugestão do gestor. Valor monetário não obrigatório. Pode ser importada via CSV.</p>
+            </div>
+          </div>
+          <div class="funnel-step">
+            <div class="funnel-num">2</div>
+            <div class="funnel-step-body">
+              <h4>Contato / Agendado</h4>
+              <p>Clientes visitados. Valor não obrigatório. Se já houve contato, adicionar pessoa de contato é obrigatório.</p>
+            </div>
+          </div>
+          <div class="funnel-step">
+            <div class="funnel-num">3</div>
+            <div class="funnel-step-body">
+              <h4>Em Negociação — Negócios Mornos</h4>
+              <p><strong>Valor monetário obrigatório.</strong> Deve ter ao menos uma proposta apresentada.</p>
+            </div>
+          </div>
+          <div class="funnel-step">
+            <div class="funnel-num">4</div>
+            <div class="funnel-step-body">
+              <h4>Proposta Apresentada — Negócios Quentes</h4>
+              <p><strong>Valor monetário e produto obrigatórios.</strong> Negócio próximo do fechamento.</p>
+            </div>
+          </div>
+          <div class="funnel-step">
+            <div class="funnel-num">5</div>
+            <div class="funnel-step-body">
+              <h4>Em Fechamento / Contrato Fechado</h4>
+              <p>Negócios aptos a dar "Ganho". Todo negócio ganho deve estar aqui antes de fechar.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-warn">
+          <span class="callout-icon">⚠️</span>
+          <span><strong>Regra de ouro:</strong> Todo negócio apto a dar "Ganho" deve estar na etapa "Em Fechamento" no CRM <em>antes</em> de ser fechado.</span>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>📊 Dashboard do Funil</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Indicador</th><th>Descrição</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Valor Basketado</strong></td><td>Negócios ganhos no período</td></tr>
+              <tr><td><strong>Previsto</strong></td><td>Valores previstos para recebimento (coluna "em fechamento")</td></tr>
+              <tr><td><strong>Em Aberto</strong></td><td>Somatório de todos os negócios em aberto no funil</td></tr>
+              <tr><td><strong>Quentes</strong></td><td>Valores na etapa "em fechamento"</td></tr>
+              <tr><td><strong>Perdidos</strong></td><td>Negócios perdidos no mês</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout callout-tip">
+          <span class="callout-icon">💡</span>
+          <span>Todos os negócios devem ter uma <strong>Data de Lançamento</strong> (mês em negociação ou previsão de quando será negociado).</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MÍDIA+ -->
+    <div class="page-section content" id="page-midia-plus">
+      <div class="page-hero">
+        <div class="page-hero-tag">Mídia+</div>
+        <h1>Mídia+ — Operação de Mídia</h1>
+        <p>Planejamento, operação e gestão da oferta comercial de veículos de mídia.</p>
+      </div>
+
+      <div class="content-block">
+        <h2>🔄 Processo Sistêmico</h2>
+        <div class="flow-chart">
+          <div class="flow-node">Propostas</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">Negociação</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node orange">Pedidos de Compra</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">Trat. Exibições</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">Checking</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node orange">Faturamento</div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Etapa</th><th>O que acontece</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Propostas</strong></td><td>Elaboração de propostas comerciais</td></tr>
+              <tr><td><strong>Negociação</strong></td><td>Controle de negociações com os clientes</td></tr>
+              <tr><td><strong>Pedidos de Compra</strong></td><td>Introdução e tratamento de mapas de mídia</td></tr>
+              <tr><td><strong>Tratamento de Exibições</strong></td><td>Programação das exibições comerciais</td></tr>
+              <tr><td><strong>Checking e Conciliação</strong></td><td>Alinhamento previsto x exibido</td></tr>
+              <tr><td><strong>Faturamento</strong></td><td>Emissão de faturamento</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>📊 Relatórios</h2>
+        <p>Mais de <strong>300 relatórios pré-configurados</strong>, gerados automaticamente a partir dos dados da operação comercial. Possibilidade de configurar relatórios customizados.</p>
+
+        <div class="callout callout-info">
+          <span class="callout-icon">ℹ️</span>
+          <span>O Mídia+ é o sistema de operação (OPEC/Tráfego). O Adsim é o CRM de vendas. Os dois se integram nativamente: pedidos de inserção gerados no Adsim são enviados ao Mídia+.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- INTEGRAÇÃO -->
+    <div class="page-section content" id="page-integracao">
+      <div class="page-hero">
+        <div class="page-hero-tag">Integração</div>
+        <h1>Integração Adsim ↔ Mídia+</h1>
+        <p>Como os dois sistemas se comunicam e quais configurações controlam esse fluxo.</p>
+      </div>
+
+      <div class="content-block">
+        <h2>⚙️ Parâmetros de Integração</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Configuração</th><th>Estado</th><th>Efeito</th></tr></thead>
+            <tbody>
+              <tr><td>Utilizar código externo nas integrações</td><td><span class="badge badge-gray">Desligado</span></td><td>Envia pedidos para empresa com o mesmo Código Externo CRM no Mídia+</td></tr>
+              <tr><td>Código Externo (Mídia+)</td><td>Ex: 879</td><td>Identifica a empresa no sistema Mídia+</td></tr>
+              <tr><td>Integrar clientes ao efetuar integrações</td><td>Apenas criar novas entidades</td><td>Utilizado nas integrações de PI Digital e Negociação</td></tr>
+              <tr><td><strong>Integrar pedidos apenas quando aprovados</strong></td><td><span class="badge badge-green">Ligado</span></td><td>PI só vai ao Mídia+ após aprovação no Adsim</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>🤖 SpotHub — Automação por IA</h2>
+        <div class="funnel-steps">
+          <div class="funnel-step">
+            <div class="funnel-num">1</div>
+            <div class="funnel-step-body">
+              <h4>Agência envia PI por e-mail</h4>
+              <p>O fluxo da agência não muda — ela continua enviando PDF normalmente</p>
+            </div>
+          </div>
+          <div class="funnel-step">
+            <div class="funnel-num">2</div>
+            <div class="funnel-step-body">
+              <h4>SpotHub interpreta o documento</h4>
+              <p>IA lê o PI e extrai os dados estruturados</p>
+            </div>
+          </div>
+          <div class="funnel-step">
+            <div class="funnel-num">3</div>
+            <div class="funnel-step-body">
+              <h4>PI criado automaticamente no Adsim</h4>
+              <p>O pedido entra no fluxo comercial da Plataforma ADS sem intervenção manual</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIG PI -->
+    <div class="page-section content" id="page-config-pi">
+      <div class="page-hero">
+        <div class="page-hero-tag">Configurações</div>
+        <h1>Comportamento do Pedido de Inserção</h1>
+        <p>Configurações que controlam aprovações, bloqueios e integrações do PI.</p>
+      </div>
+
+      <div class="content-block">
+        <h2>⚙️ Configurações do PI</h2>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <h4>Exibir mensagem de confirmação ao salvar pedido digital na alteração do vencimento</h4>
+          </div>
+          <span class="toggle-pill toggle-off">● Desligado</span>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <h4>Exibir dados de faturamento nas parcelas do pedido digital</h4>
+          </div>
+          <span class="toggle-pill toggle-off">● Desligado</span>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <h4>Permitir cancelar e substituir pedidos digitais</h4>
+          </div>
+          <span class="toggle-pill toggle-on">● Ligado</span>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <h4>Controla a aprovação do Pedido de Inserção</h4>
+            <p>Quando solicitada aprovação, não é possível alterar o PI</p>
+          </div>
+          <span class="toggle-pill toggle-on">● Ligado</span>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <h4>Bloqueia alterações no PI após aprovação</h4>
+          </div>
+          <span class="toggle-pill toggle-on">● Ligado</span>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <h4>Aprovar PI quando os descontos forem aprovados</h4>
+            <p>O sistema aprova automaticamente o PI assim que todos os descontos forem aprovados, desde que não existam outros impedimentos</p>
+          </div>
+          <span class="toggle-pill toggle-off">● Desligado</span>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <h4>Exibir comprovante digital</h4>
+            <p>Quando habilitado, exibe a opção de comprovante digital no menu de ações dos pedidos de inserção</p>
+          </div>
+          <span class="toggle-pill toggle-off">● Desligado</span>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <h4>Permite incluir inserções fora do período de veiculação</h4>
+          </div>
+          <span class="toggle-pill toggle-off">● Desligado</span>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <h4>Obrigatório aprovação comercial ao enviar PI para o Google Ad Manager</h4>
+            <p>Aprovação comercial do mapa no Mídia+ obrigatória antes de enviar ao Google Ad Manager</p>
+          </div>
+          <span class="toggle-pill toggle-off">● Desligado</span>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <h4>Enviar o PI para o Mídia+ automático</h4>
+            <p>Após aprovação do PI, realiza a integração com o Mídia+ automaticamente</p>
+          </div>
+          <span class="toggle-pill toggle-off">● Desligado</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIG PROPOSTA -->
+    <div class="page-section content" id="page-config-proposta">
+      <div class="page-hero">
+        <div class="page-hero-tag">Configurações</div>
+        <h1>Comportamento da Proposta do Negócio</h1>
+        <p>Configurações que controlam aprovações, bloqueios e geração de propostas.</p>
+      </div>
+
+      <div class="content-block">
+        <h2>⚙️ Configurações da Proposta</h2>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <h4>Não permitir adicionar período inicial de veiculação menor que o dia atual</h4>
+          </div>
+          <span class="toggle-pill toggle-on">● Ligado</span>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <h4>Bloqueio de parcelas com data menor que o mês vigente</h4>
+          </div>
+          <span class="toggle-pill toggle-on">● Ligado</span>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <h4>Controla a aprovação da Proposta do Negócio</h4>
+            <p>Quando solicitada aprovação, não é possível alterar a proposta</p>
+          </div>
+          <span class="toggle-pill toggle-off">● Desligado</span>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <h4>Bloqueia alterações na Proposta do Negócio após aprovação</h4>
+          </div>
+          <span class="toggle-pill toggle-off">● Desligado</span>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <h4>Gerar proposta automaticamente ao incluir um novo negócio</h4>
+          </div>
+          <span class="toggle-pill toggle-off">● Desligado</span>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <h4>Permitir gerar pedidos a partir de propostas em aberto</h4>
+          </div>
+          <span class="toggle-pill toggle-off">● Desligado</span>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <h4>Bloquear aprovação de proposta sem CNPJ e endereço completo do anunciante</h4>
+          </div>
+          <span class="toggle-pill toggle-off">● Desligado</span>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <h4>Gerar pedidos com situação de aprovado caso a proposta esteja aprovada</h4>
+            <p>Quando marcado, uma tentativa de envio ao Mídia+ será realizada</p>
+          </div>
+          <span class="toggle-pill toggle-off">● Desligado</span>
+        </div>
+        <div class="toggle-item">
+          <div class="toggle-label">
+            <h4>Gerar pedidos automaticamente após aprovação da proposta</h4>
+            <p>É necessário que exista um usuário administrativo com token de acesso gerado</p>
+          </div>
+          <span class="toggle-pill toggle-off">● Desligado</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLUXO COMERCIAL -->
+    <div class="page-section content" id="page-fluxo">
+      <div class="page-hero">
+        <div class="page-hero-tag">Processos</div>
+        <h1>Fluxo Comercial Completo</h1>
+        <p>Jornada da prospecção ao faturamento — Adsim + Mídia+.</p>
+      </div>
+
+      <div class="content-block">
+        <h2>🔄 Visão Geral do Fluxo</h2>
+        <div class="flow-chart">
+          <div class="flow-node">Prospecção</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">Proposta</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node orange">Aprovação</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">PI (Adsim)</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node orange">Mídia+</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">Faturamento</div>
+        </div>
+
+        <div class="funnel-steps">
+          <div class="funnel-step">
+            <div class="funnel-num">1</div>
+            <div class="funnel-step-body">
+              <h4>Prospecção e Qualificação</h4>
+              <p>Cadastrar negócio na etapa Oportunidade. Produto: "Mídia Avulsa" como placeholder se não definido.</p>
+            </div>
+          </div>
+          <div class="funnel-step">
+            <div class="funnel-num">2</div>
+            <div class="funnel-step-body">
+              <h4>Elaboração da Proposta</h4>
+              <p>Mover para "Em Negociação" (valor obrigatório). Criar proposta e vincular produto e período.</p>
+            </div>
+          </div>
+          <div class="funnel-step">
+            <div class="funnel-num">3</div>
+            <div class="funnel-step-body">
+              <h4>Negociação e Aprovação</h4>
+              <p>Mover para "Proposta Apresentada" (valor + produto obrigatórios). Submeter ao workflow de aprovações.</p>
+            </div>
+          </div>
+          <div class="funnel-step">
+            <div class="funnel-num">4</div>
+            <div class="funnel-step-body">
+              <h4>Fechamento e Geração do PI</h4>
+              <p>Mover para "Em Fechamento" → registrar como Ganho → gerar Pedido de Inserção.</p>
+            </div>
+          </div>
+          <div class="funnel-step">
+            <div class="funnel-num">5</div>
+            <div class="funnel-step-body">
+              <h4>Operação no Mídia+</h4>
+              <p>PI aprovado é enviado ao Mídia+ (OPEC). Programação e execução das exibições.</p>
+            </div>
+          </div>
+          <div class="funnel-step">
+            <div class="funnel-num">6</div>
+            <div class="funnel-step-body">
+              <h4>Checking, Conciliação e Faturamento</h4>
+              <p>Verificar previsto x exibido no AdChecking. Emitir faturamento pelo que foi veiculado.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ONBOARDING -->
+    <div class="page-section content" id="page-onboarding">
+      <div class="page-hero">
+        <div class="page-hero-tag">Implantação</div>
+        <h1>Processo de Onboarding</h1>
+        <p>8 fases, 10 marcos e responsabilidades por etapa. Versão 1.0 — 2025.</p>
+      </div>
+
+      <div class="content-block">
+        <h2>🏆 Marcos do Projeto</h2>
+        <div class="milestones">
+          <div class="milestone"><div class="milestone-num">M1</div><div><h4>Kick Off</h4><p>Plano validado com o cliente</p></div></div>
+          <div class="milestone"><div class="milestone-num">M2</div><div><h4>Ambiente Disponibilizado</h4><p>Sistema criado e configurado</p></div></div>
+          <div class="milestone"><div class="milestone-num">M3</div><div><h4>Carga de Dados</h4><p>Clientes e agências importados</p></div></div>
+          <div class="milestone"><div class="milestone-num">M4</div><div><h4>Integrações</h4><p>Conexões validadas</p></div></div>
+          <div class="milestone"><div class="milestone-num">M5</div><div><h4>Validações Concluídas</h4><p>Cliente validou o ambiente</p></div></div>
+          <div class="milestone"><div class="milestone-num">M6</div><div><h4>Treinamentos</h4><p>Todas as áreas capacitadas</p></div></div>
+          <div class="milestone"><div class="milestone-num">M7</div><div><h4>Documentação</h4><p>Manuais e guias entregues</p></div></div>
+          <div class="milestone"><div class="milestone-num">M8</div><div><h4>Testes Aprovados</h4><p>Aceitação em todos os módulos</p></div></div>
+          <div class="milestone"><div class="milestone-num">M9</div><div><h4>Go Live</h4><p>Lançamento formal e aceite</p></div></div>
+          <div class="milestone"><div class="milestone-num">M10</div><div><h4>Projeto Finalizado</h4><p>Passagem para suporte</p></div></div>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>👥 Papéis e Responsabilidades</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Papel</th><th>Lado</th><th>Responsabilidades</th></tr></thead>
+            <tbody>
+              <tr><td><strong>CSM</strong></td><td><span class="badge badge-orange">TDS</span></td><td>Coordenação geral, comunicação com cliente, adoção</td></tr>
+              <tr><td><strong>Analista de Implantação (CS)</strong></td><td><span class="badge badge-orange">TDS</span></td><td>Execução técnica, treinamentos, configuração</td></tr>
+              <tr><td><strong>Apoio CS</strong></td><td><span class="badge badge-orange">TDS</span></td><td>Suporte ao analista principal</td></tr>
+              <tr><td><strong>Gerente de Suporte</strong></td><td><span class="badge badge-orange">TDS</span></td><td>Supervisão técnica e recursos N3/Dev</td></tr>
+              <tr><td><strong>Sponsor</strong></td><td><span class="badge badge-blue">Cliente</span></td><td>Decisões estratégicas, aceite final</td></tr>
+              <tr><td><strong>Resp. Técnico</strong></td><td><span class="badge badge-blue">Cliente</span></td><td>Validações técnicas, integrações, TI</td></tr>
+              <tr><td><strong>Gerente de Projeto</strong></td><td><span class="badge badge-blue">Cliente</span></td><td>Coordenação interna</td></tr>
+              <tr><td><strong>Lideranças</strong></td><td><span class="badge badge-blue">Cliente</span></td><td>Treinamentos e validações por área</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- GUIA: CRIAR NEGÓCIO E ATIVIDADE -->
+    <div class="page-section content" id="page-guia-negocio">
+      <div class="page-hero">
+        <div class="page-hero-tag">Guia Passo a Passo</div>
+        <h1>Criar Negócio e Atividade</h1>
+        <p>Cadastrar uma nova oportunidade, definir produto e etapa, e registrar a primeira atividade.</p>
+      </div>
+
+      <div class="content-block">
+        <h2>🧭 Visão Geral</h2>
+        <div class="flow-chart">
+          <div class="flow-node">Pipeline → NOVO</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node orange">Formulário</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">Salvar</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node orange">Editar Negócio</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-node">Atividade</div>
+        </div>
+        <p><strong>Caminho:</strong> Menu superior → <strong>Vendas</strong> → <strong>Pipeline de Negócios</strong> → botão <strong>NOVO</strong></p>
+      </div>
+
+      <div class="content-block">
+        <h2>📝 Etapa 1 — Dados Iniciais</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Campo</th><th>Como preencher</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Tipo de Negociação</strong></td><td>Contrato ou Venda Pontual</td></tr>
+              <tr><td><strong>Origem</strong></td><td>Ex: Carteira. Usada em análise de resultados</td></tr>
+              <tr><td><strong>Qual a organização</strong></td><td>Nome do cliente vinculado ao negócio</td></tr>
+              <tr><td><strong>Título do negócio</strong></td><td>Nome que identifica rapidamente a oportunidade no pipeline</td></tr>
+              <tr><td><strong>Qual a agência</strong></td><td>Preenche automaticamente se cliente tiver agência vinculada</td></tr>
+              <tr><td><strong>Pessoa de contato</strong></td><td>Responsável pela negociação no lado do cliente/agência</td></tr>
+              <tr><td><strong>Período de veiculação</strong></td><td>Datas início e fim previstas — base para proposta de valor</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout-tip">
+          <span class="callout-icon">💡</span>
+          <span>Quando o cliente tem agência vinculada, o campo "Qual a agência" já vem preenchido automaticamente.</span>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>💰 Etapa 2 — Produto, Valor e Etapa</h2>
+        <p>Clique no campo <strong>Produto</strong> para abrir a lista de itens, planos e projetos disponíveis. Se ainda não houver produto definido, use <strong>"Mídia Avulsa"</strong> como placeholder.</p>
+
+        <h3>Etapas disponíveis</h3>
+        <div class="funnel-steps">
+          <div class="funnel-step"><div class="funnel-num">1</div><div class="funnel-step-body"><h4>Prospecção</h4><p>Etapa inicial, usada quando nenhuma outra é selecionada</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">2</div><div class="funnel-step-body"><h4>Contato</h4><p>Primeira interação já realizada com o cliente</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">3</div><div class="funnel-step-body"><h4>Proposta</h4><p>Proposta comercial enviada ou em elaboração</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">4</div><div class="funnel-step-body"><h4>Negociação</h4><p>Ajustes de valores e condições em discussão</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">5</div><div class="funnel-step-body"><h4>Contrato Fechado</h4><p>Negócio ganho, veiculação confirmada</p></div></div>
+        </div>
+        <div class="callout callout-tip">
+          <span class="callout-icon">💡</span>
+          <span>Mantenha <strong>"Ir para o negócio"</strong> ativado ao salvar para ser direcionado automaticamente à tela de edição.</span>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>📅 Etapa 3 — Registrar uma Atividade</h2>
+        <p>Na tela <strong>Editar Negócio</strong>, clique em <strong>Adicionar atividade</strong>. Os campos Responsável, negócio, organização e pessoa de contato já vêm preenchidos automaticamente.</p>
+        <div class="funnel-steps">
+          <div class="funnel-step"><div class="funnel-num">1</div><div class="funnel-step-body"><h4>Escolha o Tipo de Atividade</h4><p>Ex: Visita/Reunião, Ligação, E-mail</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">2</div><div class="funnel-step-body"><h4>Preencha o Título</h4><p>Descreva o objetivo — ex: "Visita para apresentar proposta ao cliente"</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">3</div><div class="funnel-step-body"><h4>Defina data e hora</h4><p>Campos: Início, Até e respectivos horários</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">4</div><div class="funnel-step-body"><h4>Clique em Salvar</h4><p>A atividade aparece em "Atividades em aberto" e o card no pipeline já exibe a atividade agendada</p></div></div>
+        </div>
+        <div class="callout callout-tip">
+          <span class="callout-icon">💡</span>
+          <span>Use as informações do card no pipeline (valor negociado, etapa, tags e prazos) para acompanhar oportunidades sem precisar abrir cada negócio.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- GUIA: APROVAR PI -->
+    <div class="page-section content" id="page-guia-aprovar-pi">
+      <div class="page-hero">
+        <div class="page-hero-tag">Guia Passo a Passo</div>
+        <h1>Aprovar Pedido de Inserção</h1>
+        <p>Validar o PI liberando-o para as etapas seguintes da operação. Aprovação individual ou em lote.</p>
+      </div>
+
+      <div class="content-block">
+        <h2>📋 Antes de Começar</h2>
+        <p>O pedido deve estar com os dados conferidos: período, veículo/praça, programação e valores. Você precisa ter <strong>permissão de aprovação</strong> no sistema.</p>
+      </div>
+
+      <div class="content-block">
+        <h2>✅ Caminho 1 — Aprovar em Lote</h2>
+        <div class="funnel-steps">
+          <div class="funnel-step"><div class="funnel-num">1</div><div class="funnel-step-body"><h4>Acesse Mídia → Meus Pedidos</h4></div></div>
+          <div class="funnel-step"><div class="funnel-num">2</div><div class="funnel-step-body"><h4>Marque os pedidos</h4><p>Aceita vários simultaneamente</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">3</div><div class="funnel-step-body"><h4>Clique no ícone Aprovar</h4><p>Ícone de mão com polegar para cima</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">4</div><div class="funnel-step-body"><h4>Aguarde o processamento</h4><p>"Por favor, aguarde — estamos processando a aprovação dos pedidos selecionados"</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">5</div><div class="funnel-step-body"><h4>Confira o resultado</h4><p>A janela mostra resultado item a item: PI, Anunciante/Agência, Veículo/Praça, Período, Status e Resposta</p></div></div>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>✅ Caminho 2 — Aprovar dentro do Pedido</h2>
+        <div class="funnel-steps">
+          <div class="funnel-step"><div class="funnel-num">1</div><div class="funnel-step-body"><h4>Abra o pedido</h4><p>Pelo ícone Editar (lápis) ou clicando no número do pedido</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">2</div><div class="funnel-step-body"><h4>Clique em Aprovar</h4><p>Botão no topo da tela</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">3</div><div class="funnel-step-body"><h4>Confirme</h4><p>"Você deseja aprovar o pedido de inserção?" → Clique em <strong>Sim, aprovar!</strong></p></div></div>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>🔍 Como Saber que Deu Certo</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Indicador</th><th>Onde ver</th></tr></thead>
+            <tbody>
+              <tr><td>Mensagem <strong>"Aprovado com sucesso"</strong></td><td>Pop-up do sistema</td></tr>
+              <tr><td>Ícone de aprovação <strong>verde</strong></td><td>Listagem de pedidos</td></tr>
+              <tr><td>Data e hora da aprovação exibidas</td><td>Dentro do pedido</td></tr>
+              <tr><td>Botão <strong>Aprovar</strong> vira <strong>Remover Aprovação</strong></td><td>Topo do pedido</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>⚠️ Pontos de Atenção</h2>
+        <div class="callout callout-warn">
+          <span class="callout-icon">⚠️</span>
+          <span><strong>Aprovação em lote pode ter sucesso parcial.</strong> Se algum item falhar, a janela avisa. Não assuma que todos foram aprovados — confira a coluna <strong>Resposta</strong> de cada linha.</span>
+        </div>
+        <div class="callout callout-warn">
+          <span class="callout-icon">🔒</span>
+          <span><strong>Aprovar trava a edição.</strong> Depois de aprovado, alterações no pedido normalmente exigem remover a aprovação antes.</span>
+        </div>
+        <div class="callout callout-info">
+          <span class="callout-icon">ℹ️</span>
+          <span>Use os filtros <strong>Aprovados</strong>, <strong>Não aprovados</strong> e <strong>Reprovados</strong> na listagem para conferir o resultado de uma aprovação em lote.</span>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>💬 Mensagens do Sistema</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Mensagem</th><th>Quando aparece</th><th>O que fazer</th></tr></thead>
+            <tbody>
+              <tr><td>Você deseja aprovar o pedido de inserção?</td><td>Confirmação individual</td><td>Clique em <strong>Sim, aprovar!</strong></td></tr>
+              <tr><td>Estamos processando a aprovação dos pedidos selecionados</td><td>Lote em andamento</td><td>Aguarde</td></tr>
+              <tr><td>Todos os itens foram aprovados com sucesso</td><td>Lote sem erros</td><td>Nenhuma ação</td></tr>
+              <tr><td>Confira a lista abaixo, pois ocorreu problema em algum item</td><td>Lote com falha parcial</td><td>Verifique coluna <strong>Resposta</strong></td></tr>
+              <tr><td>Aprovado com sucesso</td><td>Individual concluído</td><td>Nenhuma ação</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-block" style="border-left: 3px solid var(--orange); padding-left: 20px;">
+        <h2>⚙️ Configurações que Governam este Fluxo</h2>
+        <p style="margin-bottom:12px; color:var(--text-muted); font-size:13px;">As configurações abaixo estão em <strong>Backoffice → Configuração da Empresa</strong> e definem o comportamento do fluxo de aprovação. Acesse <a href="#" onclick="showPage('config-sistema'); return false;" style="color:var(--orange);">Configurações do Sistema</a> para ver o estado atual.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Toggle / Configuração</th><th>Quando <span style="color:var(--green)">●&nbsp;Ligado</span></th><th>Quando <span style="color:var(--text-light)">○&nbsp;Desligado</span></th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>Controla a aprovação do PI</strong></td>
+                <td>Fluxo de aprovação ativo — botão Aprovar visível; após solicitar, não é possível alterar</td>
+                <td>PI pode ser alterado livremente sem passar por aprovação formal</td>
+              </tr>
+              <tr>
+                <td><strong>Bloqueia alterações após aprovação</strong></td>
+                <td>PI fica somente leitura após aprovado — é necessário <em>Remover Aprovação</em> para editar</td>
+                <td>Edições ainda são possíveis mesmo com o PI aprovado</td>
+              </tr>
+              <tr>
+                <td><strong>Aprovar PI quando descontos forem aprovados</strong></td>
+                <td>O sistema aprova o PI <em>automaticamente</em> assim que todos os descontos associados forem aprovados</td>
+                <td>Aprovação do PI é sempre manual, independente dos descontos</td>
+              </tr>
+              <tr>
+                <td><strong>Bloquear sem análise de crédito</strong></td>
+                <td>Não é possível solicitar ou aprovar o PI enquanto a análise de crédito do negócio não estiver liberada</td>
+                <td>Crédito não interfere no fluxo de aprovação do PI</td>
+              </tr>
+              <tr>
+                <td><strong>Bloquear aprovação sem CNPJ/endereço</strong></td>
+                <td>O sistema impede a aprovação se o anunciante ou a agência não tiver CNPJ e endereço completos</td>
+                <td>Aprovação não verifica dados cadastrais</td>
+              </tr>
+              <tr>
+                <td><strong>Obrigar negócio ao adicionar PI</strong></td>
+                <td>Impede criar o PI sem vínculo com um negócio — pré-requisito antes de chegar à aprovação</td>
+                <td>PI pode ser criado sem negócio vinculado</td>
+              </tr>
+              <tr>
+                <td><strong>Enviar PI ao Mídia+ automaticamente</strong></td>
+                <td>A <em>aprovação</em> dispara integração automática com o Mídia+ — erros ficam no log de integrações</td>
+                <td>Integração com Mídia+ é feita manualmente em momento separado</td>
+              </tr>
+              <tr>
+                <td><strong>Integrar pedidos apenas quando aprovados</strong></td>
+                <td>Somente PIs aprovados no Adsim são enviados ao Mídia+</td>
+                <td>PI pode ser enviado ao Mídia+ independente do status de aprovação</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout-tip" style="margin-top:14px;">
+          <span class="callout-icon">💡</span>
+          <span>Se o botão <strong>Aprovar</strong> não aparece ou está bloqueado, o motivo está em uma dessas configurações. Verifique a análise de crédito, o CNPJ do anunciante e o vínculo com negócio antes de escalar o problema.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- GUIA: TEMPERATURA DO PIPELINE -->
+    <div class="page-section content" id="page-guia-temperatura">
+      <div class="page-hero">
+        <div class="page-hero-tag">Guia Passo a Passo</div>
+        <h1>Temperatura das Etapas da Pipeline</h1>
+        <p>Classificar etapas por nível de interesse para priorização do trabalho comercial.</p>
+      </div>
+
+      <div class="content-block">
+        <h2>🌡️ Para que Serve</h2>
+        <p>Classificar cada etapa do funil por <strong>nível de interesse e potencial de conversão</strong>. Facilita a leitura rápida do pipeline e a priorização comercial.</p>
+        <div style="display:flex; gap:12px; margin:16px 0;">
+          <span class="badge badge-blue" style="padding:6px 14px; font-size:13px;">🔵 Frio</span>
+          <span class="badge badge-amber" style="padding:6px 14px; font-size:13px;">🟡 Morno</span>
+          <span class="badge" style="background:#FEE2E2;color:#B91C1C; padding:6px 14px; font-size:13px;">🔴 Quente</span>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>🔧 Passo a Passo</h2>
+        <div class="funnel-steps">
+          <div class="funnel-step"><div class="funnel-num">1</div><div class="funnel-step-body"><h4>Acesse Vendas → Gerenciar Pipeline</h4></div></div>
+          <div class="funnel-step"><div class="funnel-num">2</div><div class="funnel-step-body"><h4>Selecione o pipeline</h4></div></div>
+          <div class="funnel-step"><div class="funnel-num">3</div><div class="funnel-step-body"><h4>Clique no ícone Editar (lápis)</h4></div></div>
+          <div class="funnel-step"><div class="funnel-num">4</div><div class="funnel-step-body"><h4>Abra a aba Etapas</h4></div></div>
+          <div class="funnel-step"><div class="funnel-num">5</div><div class="funnel-step-body"><h4>Clique na etapa desejada</h4></div></div>
+          <div class="funnel-step"><div class="funnel-num">6</div><div class="funnel-step-body"><h4>Clique no ícone de edição (lápis) da etapa</h4></div></div>
+          <div class="funnel-step"><div class="funnel-num">7</div><div class="funnel-step-body"><h4>Escolha a Temperatura</h4><p>Frio, Morno ou Quente</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">8</div><div class="funnel-step-body"><h4>Clique em Salvar</h4><p>Sistema exibe "Salvo com sucesso!"</p></div></div>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>📊 Referência — Temperatura por Etapa</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Etapa</th><th>Temperatura sugerida</th><th>Justificativa</th></tr></thead>
+            <tbody>
+              <tr><td>Prospecção / Oportunidade</td><td>🔵 Frio</td><td>Sem contato ou interesse confirmado ainda</td></tr>
+              <tr><td>Contato / Agendado</td><td>🔵 Frio</td><td>Interesse inicial, sem proposta</td></tr>
+              <tr><td>Em Negociação</td><td>🟡 Morno</td><td>Proposta em discussão ativa</td></tr>
+              <tr><td>Proposta Apresentada</td><td>🔴 Quente</td><td>Alta probabilidade de fechamento</td></tr>
+              <tr><td>Em Fechamento</td><td>🔴 Quente</td><td>Prestes a dar ganho</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>⚠️ Pontos de Atenção</h2>
+        <div class="callout callout-warn">
+          <span class="callout-icon">⚠️</span>
+          <span><strong>A temperatura é da etapa, não do negócio.</strong> Todos os negócios naquela fase herdam a leitura da etapa — não é possível marcar um negócio individual como quente por esta tela.</span>
+        </div>
+        <div class="callout callout-info">
+          <span class="callout-icon">ℹ️</span>
+          <span>Na mesma janela de edição ficam <strong>Máximo de dias</strong> e <strong>Permitir dar ganho nessa etapa</strong>. É comum ajustar os três de uma vez.</span>
+        </div>
+        <div class="callout callout-tip">
+          <span class="callout-icon">💡</span>
+          <span><strong>A temperatura é informativa</strong> — não bloqueia nem libera o avanço do negócio. Para restringir avanço, use campos obrigatórios.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- GUIA: METAS DE VENDAS -->
+    <div class="page-section content" id="page-guia-metas">
+      <div class="page-hero">
+        <div class="page-hero-tag">Guia Passo a Passo</div>
+        <h1>Metas de Vendas</h1>
+        <p>Configurar metas por executivo, empresa, veículo, produto ou pipeline. Alimenta o dashboard Meta x Basket.</p>
+      </div>
+
+      <div class="content-block">
+        <h2>📍 Acesso ao Módulo</h2>
+        <p><strong>Caminho:</strong> Canto superior direito → clique no <strong>nome do usuário</strong> → <strong>Meta de Vendas</strong></p>
+        <div class="callout callout-info">
+          <span class="callout-icon">ℹ️</span>
+          <span>O sistema pode exibir um <strong>guia interativo de 20 etapas</strong> ao acessar o Pipeline. Para reiniciá-lo a qualquer momento, clique em <strong>🔄 Reiniciar</strong> no canto superior direito da listagem de metas.</span>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>🏗️ Estrutura da Tela</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Painel</th><th>Conteúdo</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Esquerdo</strong></td><td>Descrição, Empresa Exibição, Executivo, Empresa, Veículo, Pipeline/Etapa, Produto, Tipo de Atividade</td></tr>
+              <tr><td><strong>Direito</strong></td><td>Seção <strong>Definir Período</strong>: datas de início/fim, valor e períodos mensais gerados automaticamente</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>⚙️ Campos de Configuração</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Campo</th><th>Obrigatoriedade</th><th>Descrição</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Descrição</strong></td><td><span class="badge badge-orange">Obrigatório</span></td><td>Nome identificador — deve refletir objetivo e período</td></tr>
+              <tr><td>Utilizar valor líquido</td><td><span class="badge badge-gray">Toggle opcional</span></td><td>Considera valor líquido no cálculo</td></tr>
+              <tr><td>Utilizar valor basket</td><td><span class="badge badge-gray">Toggle opcional</span></td><td>Considera valor basket no cálculo</td></tr>
+              <tr><td><strong>Empresa Exibição</strong></td><td><span class="badge badge-amber">Recomendado</span></td><td>Vincula a meta a uma empresa para controle preciso</td></tr>
+              <tr><td><strong>Executivo</strong></td><td><span class="badge badge-amber">Recomendado</span></td><td>Usuário responsável — expandir seção e adicionar em Usuários</td></tr>
+              <tr><td>Empresa</td><td><span class="badge badge-gray">Opcional</span></td><td>Filtro por empresa específica</td></tr>
+              <tr><td>Veículo</td><td><span class="badge badge-gray">Opcional</span></td><td>Somente se meta for por veículo específico</td></tr>
+              <tr><td>Pipeline / Etapa</td><td><span class="badge badge-gray">Opcional</span></td><td>Somente se a meta estiver atrelada a um funil de negócios</td></tr>
+              <tr><td>Produto</td><td><span class="badge badge-gray">Opcional</span></td><td>Filtro por produto</td></tr>
+              <tr><td>Tipo de Atividade</td><td><span class="badge badge-gray">Opcional</span></td><td>Filtro por tipo de atividade</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout-warn">
+          <span class="callout-icon">⚠️</span>
+          <span>Campos opcionais devem ser preenchidos <strong>apenas quando a meta precisar ser segmentada</strong> por aquele critério. Em branco = meta mais ampla.</span>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>📅 Definindo Períodos e Valores</h2>
+        <div class="funnel-steps">
+          <div class="funnel-step"><div class="funnel-num">1</div><div class="funnel-step-body"><h4>Informe Período Início e Até</h4><p>Datas de início e fim da meta</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">2</div><div class="funnel-step-body"><h4>Preencha o Valor</h4><p>Montante a alcançar no período (aceita decimais). Ex: R$ 150.000,00</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">3</div><div class="funnel-step-body"><h4>Clique em Aplicar</h4><p>O sistema distribui automaticamente o valor pelos meses do intervalo. Ex: 8 meses → 8 linhas de R$ 150.000,00</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">4</div><div class="funnel-step-body"><h4>Revise os períodos gerados</h4><p>Cabeçalho exibe total de registros e Valor Total acumulado</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">5</div><div class="funnel-step-body"><h4>Ajuste se necessário</h4><p>🗑 Lixeira para remover mês específico | ⊕ Adicionar para novos intervalos | ✦ Limpar para recomeçar</p></div></div>
+        </div>
+        <div class="callout callout-tip">
+          <span class="callout-icon">💡</span>
+          <span>Use <strong>⊕ Adicionar</strong> múltiplas vezes para criar intervalos com valores diferentes — ideal para metas distintas por trimestre.</span>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>💾 Salvando</h2>
+        <div class="funnel-steps">
+          <div class="funnel-step"><div class="funnel-num">1</div><div class="funnel-step-body"><h4>Confira o Valor Total</h4><p>Exibido no painel direito — confirma o montante acumulado de todos os períodos</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">2</div><div class="funnel-step-body"><h4>Clique em 💾 Salvar</h4><p>Botão no canto superior direito</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">3</div><div class="funnel-step-body"><h4>Confirmação</h4><p>Redireciona para a listagem. Notificação verde "✅ Salvo com sucesso!" confirma o cadastro</p></div></div>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>🔗 Relação com Outros Módulos</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Módulo</th><th>Relação</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Dashboard — Meta x Basket</strong></td><td>Consome as metas cadastradas para exibir acompanhamento de desempenho</td></tr>
+              <tr><td><strong>Pipeline de Negócios</strong></td><td>O guia interativo de metas é acessado a partir do Pipeline</td></tr>
+              <tr><td><strong>Executivos de Vendas</strong></td><td>As metas são atribuídas por usuário/executivo</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- GUIA: AGRUPADORES DE LINHA -->
+    <div class="page-section content" id="page-guia-agrupadores">
+      <div class="page-hero">
+        <div class="page-hero-tag">Guia Passo a Passo</div>
+        <h1>Agrupadores de Linha</h1>
+        <p>Criar, editar e associar agrupadores para organizar linhas de entrega no Portfólio de Produtos por segmento, período ou responsável.</p>
+      </div>
+
+      <div class="content-block">
+        <h2>📍 Acesso ao Módulo</h2>
+        <p><strong>Caminho:</strong> Menu superior → <strong>Portfólio de Produtos</strong> → selecionar um plano → <strong>Editar Entrega</strong> → ícone <strong>⋮ (mais opções)</strong> → <strong>Gerenciar Agrupadores de Linha</strong></p>
+        <div class="callout callout-info">
+          <span class="callout-icon">ℹ️</span>
+          <span>Os agrupadores são configurados globalmente e ficam disponíveis para uso em qualquer entrega do portfólio após serem criados.</span>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>🔄 Fluxo Resumido</h2>
+        <div class="funnel-steps">
+          <div class="funnel-step"><div class="funnel-num">1</div><div class="funnel-step-body"><h4>Portfólio de Produtos</h4><p>Clique no código do plano para ver os detalhes</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">2</div><div class="funnel-step-body"><h4>Editar Entrega</h4><p>Acesse a edição da entrega do produto</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">3</div><div class="funnel-step-body"><h4>Mais Opções → Agrupadores</h4><p>Ícone ⋮ → Gerenciar Agrupadores de Linha</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">4</div><div class="funnel-step-body"><h4>Criar / Editar Agrupador</h4><p>Defina legenda, nome, descrição e cor</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">5</div><div class="funnel-step-body"><h4>Configurar na Entrega</h4><p>Selecione agrupador e tipo, confirme e salve</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">6</div><div class="funnel-step-body"><h4>Visualizar por Grupos</h4><p>Aba de visualização agrupada no portfólio</p></div></div>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>➕ Criar Novo Agrupador</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Passo</th><th>Ação</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>No campo <strong>Legenda</strong>, insira um código curto (ex.: "PT" para Prime Time)</td></tr>
+              <tr><td>2</td><td>No campo <strong>Nome</strong>, digite um nome descritivo (ex.: "Grupo Prime Time")</td></tr>
+              <tr><td>3</td><td>No campo <strong>Descrição</strong>, escreva o propósito ou responsável pelo grupo</td></tr>
+              <tr><td>4</td><td>No seletor de <strong>Cor</strong>, escolha uma cor para identificação visual</td></tr>
+              <tr><td>5</td><td>Clique em <strong>⊕ Adicionar</strong> e confirme em <strong>Adicionar</strong> na caixa de confirmação</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>✏️ Editar Agrupador Existente</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Passo</th><th>Ação</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>Clique no ícone <strong>✏️ Editar</strong> ao lado do agrupador desejado</td></tr>
+              <tr><td>2</td><td>Modifique os campos desejados (nome, descrição, cor)</td></tr>
+              <tr><td>3</td><td>Para ativar/desativar, marque o toggle de <strong>Status ativo</strong></td></tr>
+              <tr><td>4</td><td>Salve as alterações e clique em <strong>Fechar</strong> para retornar</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout-warn">
+          <span class="callout-icon">⚠️</span>
+          <span>Agrupadores <strong>inativos</strong> não ficam disponíveis para seleção nas entregas. Desative apenas os que não estão mais em uso.</span>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>⚙️ Configurar Agrupador em uma Entrega</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Passo</th><th>Ação</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>Em <strong>Editar Entrega</strong>, habilite a opção de configuração do agrupador de linhas</td></tr>
+              <tr><td>2</td><td>No campo <strong>Selecionar Agrupador</strong>, escolha um grupo existente</td></tr>
+              <tr><td>3</td><td>No campo <strong>Tipo de Agrupamento</strong>, selecione a modalidade</td></tr>
+              <tr><td>4</td><td>Clique em <strong>Confirmar</strong> para salvar as alterações</td></tr>
+              <tr><td>5</td><td>Para cada linha, selecione o grupo de linha e clique em <strong>💾 Salvar</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tipo de Agrupamento</th><th>Quando usar</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Exclusivo</strong></td><td>Cada linha pertence a apenas um grupo — hierarquia clara</td></tr>
+              <tr><td><strong>Compartilhado</strong></td><td>Uma linha pode aparecer em mais de um grupo</td></tr>
+              <tr><td><strong>Personalizado</strong></td><td>Configuração manual de associações por linha</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>📋 Campos do Agrupador de Linha</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Campo</th><th>Obrigatoriedade</th><th>Descrição</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Legenda</strong></td><td><span class="badge badge-orange">Obrigatório</span></td><td>Código curto de identificação (ex.: "GRP1", "PT")</td></tr>
+              <tr><td><strong>Nome</strong></td><td><span class="badge badge-orange">Obrigatório</span></td><td>Nome descritivo do grupo</td></tr>
+              <tr><td>Descrição</td><td><span class="badge badge-gray">Opcional</span></td><td>Detalhes sobre o propósito ou responsável do grupo</td></tr>
+              <tr><td>Cor</td><td><span class="badge badge-amber">Recomendado</span></td><td>Cor para identificação visual rápida</td></tr>
+              <tr><td><strong>Status ativo</strong></td><td><span class="badge badge-orange">Obrigatório</span></td><td>Determina se o agrupador está disponível para uso nas entregas</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>💡 Boas Práticas</h2>
+        <div class="callout callout-tip">
+          <span class="callout-icon">💡</span>
+          <span>Defina uma <strong>legenda padronizada</strong> (ex.: PT = Prime Time, MH = Manhã, TN = Tarde/Noite) para leitura ágil em relatórios e visualizações.</span>
+        </div>
+        <ul style="margin-top:12px; padding-left:20px; line-height:2">
+          <li>Use <strong>cores distintas</strong> por grupo para identificação visual rápida</li>
+          <li>Mantenha <strong>ativos</strong> somente os agrupadores em uso corrente</li>
+          <li>Prefira o tipo <strong>Exclusivo</strong> para hierarquia clara de organização</li>
+          <li>Após qualquer alteração, sempre clique em <strong>Salvar</strong> na entrega para aplicar</li>
+        </ul>
+      </div>
+
+      <div class="content-block">
+        <h2>🔗 Relação com Outros Módulos</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Módulo</th><th>Relação</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Portfólio de Produtos</strong></td><td>Os agrupadores são configurados dentro das entregas do portfólio</td></tr>
+              <tr><td><strong>Editar Entrega</strong></td><td>Ponto de acesso ao gerenciamento e associação de agrupadores</td></tr>
+              <tr><td><strong>Visualização por Grupos</strong></td><td>Aba que exibe a entrega organizada pelos agrupadores definidos</td></tr>
+              <tr><td><strong>Relatórios Comerciais</strong></td><td>Os grupos de linha podem ser usados como dimensão de análise</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- GUIA: CRIAR PRODUTO NO PORTFÓLIO -->
+    <div class="page-section content" id="page-guia-criar-produto">
+      <div class="page-hero">
+        <div class="page-hero-tag">Guia Passo a Passo</div>
+        <h1>Criar Produto no Portfólio</h1>
+        <p>Cadastrar um novo produto em Ofertas → Produtos: dados gerais, tipo, tags e segmentação. O produto fica disponível para vincular a negócios, propostas e pedidos de inserção.</p>
+      </div>
+
+      <div class="content-block">
+        <h2>📍 Acesso ao Módulo</h2>
+        <p><strong>Caminho:</strong> Menu superior → <strong>Ofertas</strong> → <strong>Produtos</strong> → botão <strong>Novo</strong></p>
+      </div>
+
+      <div class="content-block">
+        <h2>🔄 Fluxo Resumido</h2>
+        <div class="funnel-steps">
+          <div class="funnel-step"><div class="funnel-num">1</div><div class="funnel-step-body"><h4>Menu Ofertas</h4><p>Clique em Ofertas no menu superior</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">2</div><div class="funnel-step-body"><h4>Produtos</h4><p>Selecione Produtos no submenu — abre o Portfólio de Produtos</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">3</div><div class="funnel-step-body"><h4>Botão Novo</h4><p>Clique em Novo para abrir o formulário de criação</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">4</div><div class="funnel-step-body"><h4>Dados Gerais</h4><p>Preencha título, tipo e tags do produto</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">5</div><div class="funnel-step-body"><h4>Segmentação (opcional)</h4><p>Defina público-alvo e segmento se aplicável</p></div></div>
+          <div class="funnel-step"><div class="funnel-num">6</div><div class="funnel-step-body"><h4>Criar produto</h4><p>Clique em Criar produto para salvar — ficha do produto é exibida</p></div></div>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>📋 Campos do Formulário</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Campo</th><th>Obrigatoriedade</th><th>Descrição</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Título</strong></td><td><span class="badge badge-orange">Obrigatório</span></td><td>Nome do produto no portfólio, propostas e PIs. Ex.: "TV Globo — Prime Time 30s"</td></tr>
+              <tr><td><strong>Tipo</strong></td><td><span class="badge badge-orange">Obrigatório</span></td><td>Classificação da oferta (Patrocínio, Espaço Comercial, Projeto, Pacote…)</td></tr>
+              <tr><td>Tags</td><td><span class="badge badge-gray">Opcional</span></td><td>Palavras-chave para busca e categorização — use termos da equipe comercial</td></tr>
+              <tr><td>Público-alvo</td><td><span class="badge badge-gray">Opcional</span></td><td>Perfil de audiência a quem o produto se destina</td></tr>
+              <tr><td>Segmento</td><td><span class="badge badge-gray">Opcional</span></td><td>Área de atuação ou nicho (ex.: Esportes, Varejo, Tecnologia)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout callout-tip">
+          <span class="callout-icon">💡</span>
+          <span>A <strong>segmentação</strong> é opcional mas recomendada para produtos direcionados a um nicho específico — facilita filtros e análises por segmento nos relatórios comerciais.</span>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>💡 Boas Práticas</h2>
+        <ul style="padding-left:20px; line-height:2">
+          <li>Use <strong>títulos descritivos e padronizados</strong> — inclua veículo, formato e período quando relevante</li>
+          <li>Preencha as <strong>tags</strong> com termos que a equipe usa ao buscar produtos na proposta</li>
+          <li>Após criar, configure as <strong>entregas e precificações</strong> para o produto ficar pronto para uso comercial</li>
+          <li>Um produto criado fica disponível <strong>imediatamente</strong> para vincular a negócios e propostas</li>
+        </ul>
+      </div>
+
+      <div class="content-block">
+        <h2>🔗 Relação com Outros Módulos</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Módulo</th><th>Relação</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Pipeline de Negócios</strong></td><td>O produto é vinculado ao negócio no campo Produto durante o cadastro da oportunidade</td></tr>
+              <tr><td><strong>Proposta Comercial</strong></td><td>O produto é o insumo principal da proposta — valor e período são definidos a partir dele</td></tr>
+              <tr><td><strong>Agrupadores de Linha</strong></td><td>Organizam as linhas de entrega do produto dentro do portfólio</td></tr>
+              <tr><td><strong>Pedido de Inserção (PI)</strong></td><td>O PI é gerado a partir do produto vinculado ao negócio fechado</td></tr>
+              <tr><td><strong>Metas de Vendas</strong></td><td>As metas podem ser segmentadas por produto específico</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIGURAÇÕES DO SISTEMA -->
+    <div class="page-section content" id="page-config-sistema">
+      <div class="page-hero">
+        <div class="page-hero-tag">Configurações</div>
+        <h1>Configurações do Sistema</h1>
+        <p>Regras de comportamento do Adsim para a empresa: aprovações, bloqueios, integrações, fluxos automáticos e personalizações dos módulos de PI, Proposta, Negócio, Cadastro e Planejamento.</p>
+      </div>
+
+      <div class="content-block">
+        <h2>📍 Acesso ao Módulo</h2>
+        <p><strong>Caminho:</strong> Menu superior → <strong>Backoffice</strong> → selecionar empresa → aba <strong>Configuração</strong></p>
+        <div class="callout callout-warning">
+          <span class="callout-icon">⚠️</span>
+          <span>Apenas usuários com perfil <strong>administrativo</strong> têm acesso a esta tela. Alterações afetam o comportamento do sistema para <strong>todos os usuários</strong> da empresa.</span>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>🖨️ Impressão do Pedido de Inserção</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Configuração</th><th>Descrição</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Logomarca</strong></td><td>Define qual logo aparece na impressão: do Veículo ou da Empresa</td></tr>
+              <tr><td><strong>Observação padrão</strong></td><td>Aplica texto fixo de observação no PI e na Proposta (por Anunciante, Agência, Empresa ou Veículo)</td></tr>
+              <tr><td><strong>Observação mapa</strong></td><td>Usa o texto de observação definido no mapa de veiculação</td></tr>
+              <tr><td><strong>URL do termo de aceite</strong></td><td>Link para o termo de aceite exibido na proposta e no pedido</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>📄 Comportamento do Pedido de Inserção</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Configuração</th><th>Descrição</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Controla aprovação do PI</strong></td><td>Ativa fluxo de aprovação — após solicitar, não é possível alterar</td></tr>
+              <tr><td><strong>Bloquear alterações após aprovação</strong></td><td>Impede qualquer edição no PI depois de aprovado</td></tr>
+              <tr><td><strong>Aprovar PI quando descontos aprovados</strong></td><td>Aprovação automática do PI assim que todos os descontos forem aprovados</td></tr>
+              <tr><td><strong>Enviar PI ao Mídia+ automaticamente</strong></td><td>Após aprovação do PI, realiza integração automática com o Mídia+ (erros ficam no log)</td></tr>
+              <tr><td><strong>Obrigar negócio ao adicionar PI</strong></td><td>Impede criar um novo PI sem vincular a um negócio</td></tr>
+              <tr><td><strong>Bloquear aprovação sem negócio</strong></td><td>Bloqueia aprovação do PI que não tenha negócio atrelado</td></tr>
+              <tr><td><strong>Bloquear sem CNPJ/endereço</strong></td><td>Impede aprovar PI sem dados fiscais completos do anunciante ou agência</td></tr>
+              <tr><td><strong>Bloquear sem análise de crédito</strong></td><td>Impede solicitar/aprovar o PI sem crédito do negócio liberado</td></tr>
+              <tr><td><strong>Inserções fora do período</strong></td><td>Permite adicionar inserções fora do período definido no PI</td></tr>
+              <tr><td><strong>Exibir comprovante digital</strong></td><td>Exibe opção de comprovante digital no menu de ações do PI</td></tr>
+              <tr><td><strong>Aprovação obrigatória p/ Google Ad Manager</strong></td><td>Exige aprovação comercial no Mídia+ antes de enviar o PI ao Google Ad Manager</td></tr>
+              <tr><td><strong>Cancelar e substituir PIs</strong></td><td>Habilita o fluxo de cancelamento e substituição de pedidos digitais</td></tr>
+              <tr><td><strong>Exibir código externo RP</strong></td><td>Habilita visualização e pesquisa por código externo do RP (Sis.Com)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>📋 Comportamento da Proposta do Negócio</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Configuração</th><th>Descrição</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Controla aprovação da Proposta</strong></td><td>Ativa fluxo de aprovação — após solicitar, não é possível alterar</td></tr>
+              <tr><td><strong>Bloquear alterações após aprovação</strong></td><td>Impede edições na proposta após aprovada</td></tr>
+              <tr><td><strong>Gerar proposta automaticamente ao criar negócio</strong></td><td>Cria uma proposta em aberto automaticamente ao cadastrar um novo negócio</td></tr>
+              <tr><td><strong>Gerar pedidos automaticamente após aprovação</strong></td><td>Após aprovar a proposta, os pedidos são gerados automaticamente (requer usuário administrativo com token)</td></tr>
+              <tr><td><strong>Gerar pedidos aprovados se proposta aprovada</strong></td><td>Ao gerar PIs de proposta aprovada, o PI nasce com status aprovado</td></tr>
+              <tr><td><strong>Bloquear período inicial menor que hoje</strong></td><td>Impede informar data de início de veiculação anterior à data atual</td></tr>
+              <tr><td><strong>Bloquear sem CNPJ/endereço</strong></td><td>Impede aprovar proposta sem dados fiscais completos do anunciante ou agência</td></tr>
+              <tr><td><strong>Modelo de geração automática</strong></td><td>Define o template: por produto (padrão) ou por veículo/praça</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>💼 Comportamento do Negócio</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Configuração</th><th>Descrição</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Controlar análise de crédito</strong></td><td>Ativa controle de crédito — impede solicitar/aprovar sem crédito liberado</td></tr>
+              <tr><td><strong>Envio automático quando crédito liberado</strong></td><td>Ao liberar crédito, envia negócio e PI ao Mídia+ e muda status para "Ganho"</td></tr>
+              <tr><td><strong>Enviar negócio ao Mídia+ automaticamente</strong></td><td>Quando o negócio for ganho, integra automaticamente com a OPEC</td></tr>
+              <tr><td><strong>Preencher proposta automaticamente na criação</strong></td><td>Ao criar um negócio, preenche a proposta com dados do cliente automaticamente</td></tr>
+              <tr><td><strong>Alterar negócio para ganho na aprovação da proposta</strong></td><td>Na aprovação da proposta, o negócio é marcado como ganho automaticamente</td></tr>
+              <tr><td><strong>Impedir perder negócio com PIs aprovados</strong></td><td>Bloqueia a ação de perder um negócio com PIs aprovados ou integrados</td></tr>
+              <tr><td><strong>Notificar executivo em pendências</strong></td><td>Envia notificação ao executivo e seguidor quando pendência é aprovada/reprovada</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>🏢 Comportamentos da Empresa</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Configuração</th><th>Descrição</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Controlar carteira de cliente</strong></td><td>Executivo só seleciona organizações da própria carteira ao criar negócios</td></tr>
+              <tr><td><strong>Controlar descontos</strong></td><td>Controla descontos ao editar propostas e PIs</td></tr>
+              <tr><td><strong>Associar organizações sem carteira automaticamente</strong></td><td>Ao criar negócio, associa a organização à carteira do executivo se não tiver carteira definida</td></tr>
+              <tr><td><strong>Verificar CNPJ duplicado</strong></td><td>Impede cadastrar empresas com o mesmo CNPJ já existente</td></tr>
+              <tr><td><strong>CPF obrigatório / verificar duplicado</strong></td><td>Impede salvar pessoa sem CPF ou com CPF já cadastrado</td></tr>
+              <tr><td><strong>Buscar dados na Receita Federal</strong></td><td>Habilita consulta automática de CNPJ</td></tr>
+              <tr><td><strong>Limite de usuários ativos</strong></td><td>Define o número máximo de usuários ativos na empresa</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>⚙️ Outros Comportamentos</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Bloco</th><th>Configuração</th><th>Descrição</th></tr></thead>
+            <tbody>
+              <tr><td>Integração Mídia+</td><td><strong>Integrar apenas quando aprovados</strong></td><td>Envia pedidos/negócios ao Mídia+ somente após aprovação</td></tr>
+              <tr><td>Integração Mídia+</td><td><strong>Comportamento de entidades</strong></td><td>Criar, alterar ou ignorar entidades no Mídia+</td></tr>
+              <tr><td>Produto</td><td><strong>Bloquear alteração de nome</strong></td><td>Impede renomear produto vinculado a negócio ou PI</td></tr>
+              <tr><td>Vendas</td><td><strong>Utilizar valores líquidos</strong></td><td>Considera valor líquido nos cálculos de vendas</td></tr>
+              <tr><td>Vendas</td><td><strong>Pipeline padrão</strong></td><td>Define qual pipeline é usada por padrão nos novos negócios</td></tr>
+              <tr><td>Planejamento</td><td><strong>Aprovar somente com aceite de todos</strong></td><td>Planejamento aprovado apenas quando todos os envolvidos derem aceite</td></tr>
+              <tr><td>Planejamento</td><td><strong>Não gerar com valor zerado</strong></td><td>Não gera sugestões com valor planejado igual a zero</td></tr>
+              <tr><td>Keycloak</td><td><strong>SSO</strong></td><td>Integração com provedor de identidade (Realm, Client ID, Client Secret, URL)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-block">
+        <h2>💡 Boas Práticas</h2>
+        <ul style="padding-left:20px; line-height:2">
+          <li>Ative <strong>"Controla aprovação"</strong> nos módulos de PI e Proposta quando o fluxo exigir alçadas de aprovação</li>
+          <li>Configure <strong>"Bloquear sem CNPJ/endereço"</strong> para garantir dados fiscais completos antes da aprovação</li>
+          <li>Use <strong>"Gerar proposta automaticamente"</strong> para reduzir etapas manuais no início do fluxo de vendas</li>
+          <li>Ative <strong>"Integrar apenas quando aprovados"</strong> para evitar o envio de dados pendentes ao Mídia+</li>
+          <li>O toggle <strong>"Controlar carteira"</strong> deve ser ativado em operações com times de vendas segmentados por executivo</li>
+          <li>Mantenha o <strong>Fuso Horário</strong> correto para evitar discrepâncias em datas e vencimentos</li>
+        </ul>
+      </div>
+
+      <div class="content-block">
+        <h2>🔗 Relação com Outros Módulos</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Módulo</th><th>Relação</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Pedido de Inserção</strong></td><td>Aprovação, bloqueios e integração com Mídia+ são definidos aqui</td></tr>
+              <tr><td><strong>Proposta do Negócio</strong></td><td>Geração automática, aprovação e bloqueios da proposta</td></tr>
+              <tr><td><strong>Pipeline de Negócios</strong></td><td>Pipeline padrão e comportamentos do negócio</td></tr>
+              <tr><td><strong>Integração Mídia+</strong></td><td>Entidades, envio automático e código externo</td></tr>
+              <tr><td><strong>Meta de Vendas</strong></td><td>Obrigatoriedade de executivo na meta</td></tr>
+              <tr><td><strong>Planejamento</strong></td><td>Regras de aprovação e geração do planejamento</td></tr>
+              <tr><td><strong>Cadastro de Clientes/Agências</strong></td><td>Validações de CNPJ e CPF duplicados</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VINCULAR CLIENTE AO NEGÓCIO -->
+    <div class="page-section content" id="page-guia-incluir-cliente">
+      <div class="page-hero">
+        <div class="page-hero-tag">Guia Operacional</div>
+        <h1>Vincular / Trocar / Desvincular Organização no Negócio</h1>
+        <p>Como associar, substituir ou remover o cliente (anunciante/agência) vinculado a um negócio no Adsim CRM.</p>
+      </div>
+      <div class="content-block">
+        <h2>📋 Passo a Passo</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Passo</th><th>Ação</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Acesse o negócio no módulo <strong>Vendas → Negócios</strong> e clique em <strong>Editar</strong></td></tr>
+            <tr><td>2</td><td>Localize o campo <strong>Organização</strong> no formulário</td></tr>
+            <tr><td>3</td><td><strong>Vincular:</strong> pesquise e selecione a organização desejada</td></tr>
+            <tr><td>4</td><td><strong>Trocar:</strong> clique no "X" ao lado do nome atual e selecione a nova organização</td></tr>
+            <tr><td>5</td><td><strong>Desvincular:</strong> clique no "X" para remover sem substituir</td></tr>
+            <tr><td>6</td><td>Clique em <strong>Salvar</strong></td></tr>
+            <tr><td>7</td><td>Confirme que o nome da organização foi atualizado no cabeçalho do negócio</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="content-block">
+        <h2>⚠️ Pontos de Atenção</h2>
+        <div class="callout callout-warning"><span class="callout-icon">⚠️</span><span>Trocar a organização em negócios com propostas e PIs já criados pode gerar inconsistências. Revise os dados de anunciante/agência nos documentos existentes após a troca.</span></div>
+        <p style="margin-top:12px;">Se <strong>Controlar carteira de cliente</strong> estiver ativo, o executivo só vê organizações da própria carteira. Consulte <a href="#" onclick="showPage('config-sistema'); return false;" style="color:var(--orange);">Configurações do Sistema</a>.</p>
+      </div>
+    </div>
+
+    <!-- ADICIONAR ETAPAS À PIPELINE -->
+    <div class="page-section content" id="page-guia-etapas-pipeline">
+      <div class="page-hero">
+        <div class="page-hero-tag">Guia Operacional</div>
+        <h1>Adicionar e Configurar Etapas na Pipeline</h1>
+        <p>Como adicionar novas etapas a uma pipeline existente e definir temperatura, prazo e regras de fechamento.</p>
+      </div>
+      <div class="content-block">
+        <h2>📋 Passo a Passo</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Passo</th><th>Ação</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Acesse <strong>Backoffice → Pipelines</strong></td></tr>
+            <tr><td>2</td><td>Selecione a pipeline desejada e clique em <strong>Adicionar Etapa</strong></td></tr>
+            <tr><td>3</td><td>Preencha o <strong>Título</strong> da etapa (obrigatório)</td></tr>
+            <tr><td>4</td><td>Defina a <strong>Temperatura</strong>: Fria, Morna ou Quente</td></tr>
+            <tr><td>5</td><td>Configure o <strong>Máximo de Dias</strong> sem movimentação</td></tr>
+            <tr><td>6</td><td>Marque/desmarque <strong>Permitir Ganho</strong></td></tr>
+            <tr><td>7</td><td>Salve. Repita para cada etapa adicional</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="content-block">
+        <h2>⚠️ Pontos de Atenção</h2>
+        <div class="callout callout-warning"><span class="callout-icon">⚠️</span><span><strong>Etapa sem nome:</strong> sempre preencha o título antes de salvar. Etapa vazia pode causar erros na visualização da pipeline.</span></div>
+        <p style="margin-top:12px;">Ver também: <a href="#" onclick="showPage('guia-temperatura'); return false;" style="color:var(--orange);">Temperatura das Etapas</a> | <a href="#" onclick="showPage('guia-criar-pipeline'); return false;" style="color:var(--orange);">Criar Pipeline</a></p>
+      </div>
+    </div>
+
+    <!-- ADICIONAR MATERIAIS AO PI -->
+    <div class="page-section content" id="page-guia-materiais-pi">
+      <div class="page-hero">
+        <div class="page-hero-tag">Guia Operacional</div>
+        <h1>Adicionar Materiais (Peças/Criativos) ao PI</h1>
+        <p>Como vincular peças criativas — spots, vídeos, banners — ao Pedido de Inserção.</p>
+      </div>
+      <div class="content-block">
+        <h2>📋 Passo a Passo</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Passo</th><th>Ação</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Abra o PI e localize a seção <strong>Materiais</strong></td></tr>
+            <tr><td>2</td><td>Clique em <strong>Adicionar Material</strong></td></tr>
+            <tr><td>3</td><td>Selecione a <strong>Peça</strong> (formato/tipo) — <em>obrigatório</em></td></tr>
+            <tr><td>4</td><td>Preencha o <strong>Título</strong> do material — <em>obrigatório</em></td></tr>
+            <tr><td>5</td><td>Defina a <strong>Duração</strong>: 30, 45 ou 60 segundos (para spot de rádio/TV)</td></tr>
+            <tr><td>6</td><td>Faça o upload do arquivo ou informe o link <strong>GOdrive</strong> e salve</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="content-block">
+        <h2>📌 Material vs. Anexo</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Material</th><th>Anexo</th></tr></thead>
+          <tbody>
+            <tr><td>Criativos publicitários (spots, vídeos, banners)</td><td>Documentos administrativos (contratos, autorizações)</td></tr>
+            <tr><td>Seção <strong>Materiais</strong> do PI</td><td>Seção <strong>Anexos</strong> do PI</td></tr>
+            <tr><td>Peça + Título obrigatórios</td><td>Upload simples</td></tr>
+          </tbody>
+        </table></div>
+        <p style="margin-top:12px;">Para anexar documentos administrativos, veja <a href="#" onclick="showPage('guia-anexar-pi'); return false;" style="color:var(--orange);">Anexar Arquivos ao PI</a>.</p>
+      </div>
+    </div>
+
+    <!-- ALTERAR PERÍODO DE VEICULAÇÃO -->
+    <div class="page-section content" id="page-guia-periodo-pi">
+      <div class="page-hero">
+        <div class="page-hero-tag">Guia Operacional</div>
+        <h1>Alterar o Período de Veiculação de um PI</h1>
+        <p>Como modificar as datas de início e fim de veiculação de um Pedido de Inserção já criado.</p>
+      </div>
+      <div class="content-block">
+        <h2>📋 Passo a Passo</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Passo</th><th>Ação</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Abra o PI pelo ícone <strong>Editar</strong> (lápis) ou clicando no número</td></tr>
+            <tr><td>2</td><td>Localize os campos <strong>Data Início</strong> e <strong>Data Fim</strong></td></tr>
+            <tr><td>3</td><td>Altere as datas para o novo período</td></tr>
+            <tr><td>4</td><td>Se aparecer aviso de <strong>valor divergente</strong>, revise os valores do pedido</td></tr>
+            <tr><td>5</td><td>Se houver inserções fora do período, use <strong>Remover inserções fora do período</strong></td></tr>
+            <tr><td>6</td><td>Salve o pedido</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="content-block">
+        <h2>⚙️ Configurações que Governam</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Toggle</th><th>Efeito</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Bloqueia alterações após aprovação</strong></td><td>PI aprovado fica somente leitura — remova a aprovação antes de editar o período</td></tr>
+            <tr><td><strong>Inserções fora do período</strong></td><td>Quando ligado, permite programar inserções além das datas do PI</td></tr>
+          </tbody>
+        </table></div>
+        <p style="margin-top:12px;"><a href="#" onclick="showPage('config-sistema'); return false;" style="color:var(--orange);">Ver Configurações do Sistema →</a></p>
+      </div>
+    </div>
+
+    <!-- ANEXAR ARQUIVOS AO PI -->
+    <div class="page-section content" id="page-guia-anexar-pi">
+      <div class="page-hero">
+        <div class="page-hero-tag">Guia Operacional</div>
+        <h1>Anexar Arquivos ao Pedido de Inserção</h1>
+        <p>Como adicionar documentos administrativos (contratos, briefings, autorizações) ao PI.</p>
+      </div>
+      <div class="content-block">
+        <h2>📋 Passo a Passo</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Passo</th><th>Ação</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Abra o PI e localize a seção <strong>Anexos</strong></td></tr>
+            <tr><td>2</td><td>Clique na área de upload ou <strong>arraste o arquivo</strong> para a área indicada</td></tr>
+            <tr><td>3</td><td>Clique em <strong>Enviar</strong> para confirmar</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="content-block">
+        <h2>📌 Diferença entre Anexo e Material</h2>
+        <p><strong>Anexos</strong> são documentos administrativos (contratos, autorizações). <strong>Materiais</strong> são os criativos publicitários (spots, banners). Cada tipo fica em sua seção específica.</p>
+        <p style="margin-top:8px;">Para criativos: <a href="#" onclick="showPage('guia-materiais-pi'); return false;" style="color:var(--orange);">Adicionar Materiais ao PI →</a></p>
+      </div>
+    </div>
+
+    <!-- COPIAR PI -->
+    <div class="page-section content" id="page-guia-copiar-pi">
+      <div class="page-hero">
+        <div class="page-hero-tag">Guia Operacional</div>
+        <h1>Copiar (Duplicar) um Pedido de Inserção</h1>
+        <p>Como criar uma cópia de um PI existente, com opções de praça, valores, programação, anexos e materiais.</p>
+      </div>
+      <div class="content-block">
+        <h2>📋 Passo a Passo</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Passo</th><th>Ação</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Na listagem <strong>Mídia → Meus Pedidos</strong>, clique no menu de ações do PI</td></tr>
+            <tr><td>2</td><td>Selecione <strong>Copiar</strong></td></tr>
+            <tr><td>3</td><td>Selecione a <strong>Praça</strong> de destino (pode ser diferente da original)</td></tr>
+            <tr><td>4</td><td>Marque as opções desejadas: <strong>Manter Valores</strong>, <strong>Copiar Programação</strong>, <strong>Copiar Anexos</strong>, <strong>Copiar Materiais</strong></td></tr>
+            <tr><td>5</td><td>Clique em <strong>Copiar</strong> para confirmar</td></tr>
+            <tr><td>6</td><td>O novo PI é gerado com número diferente e status <em>Em Aberto</em></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="content-block">
+        <h2>⚠️ Atenção</h2>
+        <div class="callout callout-info"><span class="callout-icon">ℹ️</span><span>A cópia sempre nasce <strong>sem aprovação</strong>, independente do status do pedido original. Siga o fluxo normal de aprovação após revisar os dados.</span></div>
+      </div>
+    </div>
+
+    <!-- CRIAR PIPELINE -->
+    <div class="page-section content" id="page-guia-criar-pipeline">
+      <div class="page-hero">
+        <div class="page-hero-tag">Guia Operacional</div>
+        <h1>Criar uma Pipeline (Funil de Vendas)</h1>
+        <p>Como criar um novo funil de vendas no Adsim CRM e preparar sua estrutura de etapas.</p>
+      </div>
+      <div class="content-block">
+        <h2>📋 Passo a Passo</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Passo</th><th>Ação</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Acesse <strong>Backoffice → Pipelines</strong></td></tr>
+            <tr><td>2</td><td>Clique em <strong>Nova Pipeline</strong></td></tr>
+            <tr><td>3</td><td>Preencha o <strong>Título</strong> (obrigatório)</td></tr>
+            <tr><td>4</td><td>Defina <strong>Data de Início</strong> e <strong>Data de Fim</strong> (vigência)</td></tr>
+            <tr><td>5</td><td>Preencha <strong>Observações</strong> se necessário</td></tr>
+            <tr><td>6</td><td>Salve — a pipeline nasce <strong>sem etapas</strong></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="content-block">
+        <h2>⚠️ Pipeline nasce sem etapas</h2>
+        <div class="callout callout-warning"><span class="callout-icon">⚠️</span><span>Após criar a pipeline, adicione as etapas antes de usá-la para negócios. Uma pipeline sem etapas não pode receber negócios.</span></div>
+        <p style="margin-top:12px;">Próximo passo: <a href="#" onclick="showPage('guia-etapas-pipeline'); return false;" style="color:var(--orange);">Adicionar Etapas à Pipeline →</a></p>
+      </div>
+    </div>
+
+    <!-- CRIAR PI DO ZERO -->
+    <div class="page-section content" id="page-guia-criar-pi">
+      <div class="page-hero">
+        <div class="page-hero-tag">Guia Operacional</div>
+        <h1>Criar um Pedido de Inserção do Zero</h1>
+        <p>Passo a passo para criar um novo PI selecionando tipo de veículo, praça e preenchendo os dados comerciais.</p>
+      </div>
+      <div class="content-block">
+        <h2>📋 Passo a Passo</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Passo</th><th>Ação</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Acesse <strong>Mídia → Meus Pedidos</strong> e clique em <strong>Novo Pedido</strong></td></tr>
+            <tr><td>2</td><td>Selecione o <strong>Tipo de Veículo</strong> (categorias 01–13: Rádio, TV, Digital, OOH…)</td></tr>
+            <tr><td>3</td><td>Selecione o <strong>Veículo</strong> e a <strong>Praça</strong></td></tr>
+            <tr><td>4</td><td>Clique em <strong>Continuar</strong></td></tr>
+            <tr><td>5</td><td>Preencha <strong>Anunciante</strong> e <strong>Agência</strong> (se houver)</td></tr>
+            <tr><td>6</td><td>Configure <strong>Faturamento</strong>, <strong>Pagamento</strong> e <strong>Natureza</strong></td></tr>
+            <tr><td>7</td><td>Defina o <strong>Período de Veiculação</strong> (início e fim)</td></tr>
+            <tr><td>8</td><td>Salve — o PI recebe um número único e status <em>Em Aberto</em></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="content-block">
+        <h2>⚙️ Configurações que Governam</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Toggle</th><th>Efeito</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Obrigar negócio ao adicionar PI</strong></td><td>PI não pode ser criado sem vínculo com negócio do CRM</td></tr>
+            <tr><td><strong>Bloquear sem análise de crédito</strong></td><td>PI não pode ser criado sem crédito do negócio liberado</td></tr>
+            <tr><td><strong>Combo de tipo de veículo</strong></td><td>Exibe seletor de tipo ao criar; sem seleção exibe todos os veículos</td></tr>
+          </tbody>
+        </table></div>
+        <p style="margin-top:12px;"><a href="#" onclick="showPage('config-sistema'); return false;" style="color:var(--orange);">Ver Configurações do Sistema →</a></p>
+      </div>
+    </div>
+
+    <!-- EDITAR PENDÊNCIA DO PI -->
+    <div class="page-section content" id="page-guia-pendencia-pi">
+      <div class="page-hero">
+        <div class="page-hero-tag">Guia Operacional</div>
+        <h1>Editar e Concluir Pendências do PI</h1>
+        <p>Como visualizar, responder e encerrar pendências abertas em um Pedido de Inserção.</p>
+      </div>
+      <div class="content-block">
+        <h2>📋 Passo a Passo</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Passo</th><th>Ação</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Abra o PI com pendência (indicador visual sinaliza pendências em aberto)</td></tr>
+            <tr><td>2</td><td>Localize a seção <strong>Pendências</strong> e clique na pendência desejada</td></tr>
+            <tr><td>3</td><td>Edite o conteúdo conforme necessário</td></tr>
+            <tr><td>4</td><td>Clique em <strong>Remover Pendência</strong> para marcar como resolvida</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="content-block">
+        <h2>📌 Remover = Concluir</h2>
+        <div class="callout callout-info"><span class="callout-icon">ℹ️</span><span><strong>Remover Pendência</strong> equivale a concluí-la — não é exclusão permanente. A pendência fica no histórico do pedido como resolvida. PIs com pendências em aberto podem ser bloqueados para aprovação.</span></div>
+      </div>
+    </div>
+
+    <!-- ENVIAR PI POR E-MAIL -->
+    <div class="page-section content" id="page-guia-email-pi">
+      <div class="page-hero">
+        <div class="page-hero-tag">Guia Operacional</div>
+        <h1>Enviar PI por E-mail para Aprovação do Cliente</h1>
+        <p>Como enviar o Pedido de Inserção ao cliente para aprovação formal, com opções de desconto, comissão e autenticidade.</p>
+      </div>
+      <div class="content-block">
+        <h2>📋 Passo a Passo</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Passo</th><th>Ação</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Abra o PI e clique no menu de ações → <strong>Enviar por E-mail</strong></td></tr>
+            <tr><td>2</td><td>Verifique o <strong>destinatário</strong> (preenchido do cadastro do anunciante/agência)</td></tr>
+            <tr><td>3</td><td>Marque <strong>Solicitar Aprovação</strong> para aprovação formal pelo link</td></tr>
+            <tr><td>4</td><td>Marque <strong>Autenticidade</strong> se o documento precisar de verificação</td></tr>
+            <tr><td>5</td><td>Configure o que será exibido: <strong>Mostrar Desconto</strong>, <strong>Comissão</strong>, <strong>Valor Líquido</strong></td></tr>
+            <tr><td>6</td><td>Adicione uma <strong>mensagem personalizada</strong> se necessário</td></tr>
+            <tr><td>7–11</td><td>Revise, confirme e clique em <strong>Enviar</strong>. O sistema registra data/hora no histórico</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="content-block">
+        <h2>⚠️ Pontos de Atenção</h2>
+        <p>A <strong>URL do Termo de Aceite</strong> exibida no e-mail é configurada em <strong>Backoffice → Configuração da Empresa</strong>. O e-mail do destinatário deve estar correto no cadastro. Sem "Solicitar Aprovação", o envio é apenas informativo.</p>
+        <p style="margin-top:8px;">Ver também: <a href="#" onclick="showPage('guia-aprovar-pi'); return false;" style="color:var(--orange);">Aprovação Interna do PI →</a> | <a href="#" onclick="showPage('config-sistema'); return false;" style="color:var(--orange);">Configurações do Sistema →</a></p>
+      </div>
+    </div>
+
+    <!-- EXCLUIR PI -->
+    <div class="page-section content" id="page-guia-excluir-pi">
+      <div class="page-hero">
+        <div class="page-hero-tag">Guia Operacional</div>
+        <h1>Excluir um Pedido de Inserção</h1>
+        <p>Como remover definitivamente um ou mais PIs do sistema. A exclusão é irreversível.</p>
+      </div>
+      <div class="content-block">
+        <h2>📋 Excluir em Lote</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Passo</th><th>Ação</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Em <strong>Mídia → Meus Pedidos</strong>, marque os pedidos desejados</td></tr>
+            <tr><td>2</td><td>Clique no ícone <strong>Excluir</strong></td></tr>
+            <tr><td>3</td><td>Confirme clicando em <strong>Sim, Excluir</strong></td></tr>
+          </tbody>
+        </table></div>
+        <h2 style="margin-top:20px;">📋 Excluir Individualmente</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Passo</th><th>Ação</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Abra ou selecione o PI</td></tr>
+            <tr><td>2</td><td>Menu de ações → <strong>Excluir</strong> → confirme em <strong>Sim, Excluir</strong></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="content-block">
+        <h2>⚠️ Exclusão é Irreversível</h2>
+        <div class="callout callout-warning"><span class="callout-icon">⚠️</span><span>Pedidos excluídos <strong>não podem ser recuperados</strong>. Se tiver dúvida, considere <strong>cancelar</strong> o pedido (mantém histórico) em vez de excluir. Pedidos aprovados ou integrados ao Mídia+ podem ter a exclusão bloqueada.</span></div>
+      </div>
+    </div>
+
+    <!-- GERAR NEGÓCIO A PARTIR DO PI -->
+    <div class="page-section content" id="page-guia-negocio-pi">
+      <div class="page-hero">
+        <div class="page-hero-tag">Guia Operacional</div>
+        <h1>Gerar Negócio CRM a Partir do PI</h1>
+        <p>Como criar um negócio no CRM a partir de um Pedido de Inserção — o fluxo inverso (PI → CRM).</p>
+      </div>
+      <div class="content-block">
+        <h2>📋 Individual</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Passo</th><th>Ação</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Abra o PI e clique em menu de ações → <strong>Gerar Negócio</strong></td></tr>
+            <tr><td>2</td><td>O formulário de negócio abre pré-preenchido com dados do PI</td></tr>
+            <tr><td>3</td><td>Selecione a <strong>Pipeline</strong> — <em>obrigatório</em></td></tr>
+            <tr><td>4</td><td>Selecione a <strong>Etapa</strong> — <em>obrigatório</em></td></tr>
+            <tr><td>5</td><td>Ajuste os demais campos e confirme</td></tr>
+          </tbody>
+        </table></div>
+        <h2 style="margin-top:20px;">📋 Em Lote</h2>
+        <p>Marque múltiplos PIs em <strong>Meus Pedidos</strong>, clique em <strong>Gerar Negócio</strong> no menu em lote e configure pipeline e etapa (aplicadas a todos).</p>
+      </div>
+      <div class="content-block">
+        <h2>⚠️ Atenção</h2>
+        <div class="callout callout-warning"><span class="callout-icon">⚠️</span><span>Pipeline e etapa são obrigatórios. Na geração em lote, a mesma pipeline/etapa é aplicada a todos os PIs selecionados — gere individualmente quando os pedidos pertencem a contextos diferentes.</span></div>
+      </div>
+    </div>
+
+    <!-- GERAR PDF E EXCEL DO PI -->
+    <div class="page-section content" id="page-guia-pdf-excel-pi">
+      <div class="page-hero">
+        <div class="page-hero-tag">Guia Operacional</div>
+        <h1>Gerar PDF e Excel do PI (Mapa de Mídia)</h1>
+        <p>Como exportar o Pedido de Inserção em PDF (10 modelos disponíveis) ou em planilha Excel.</p>
+      </div>
+      <div class="content-block">
+        <h2>📄 Gerar PDF</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Passo</th><th>Ação</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Abra o PI e clique no menu de ações → <strong>Gerar PDF</strong></td></tr>
+            <tr><td>2</td><td>Escolha o modelo adequado ao destinatário (até 10 layouts disponíveis)</td></tr>
+            <tr><td>3</td><td>O PDF é gerado e baixado automaticamente</td></tr>
+          </tbody>
+        </table></div>
+        <h2 style="margin-top:20px;">📊 Gerar Excel</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Passo</th><th>Ação</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>No menu de ações do PI → <strong>Gerar</strong> (ou Exportar Excel)</td></tr>
+            <tr><td>2</td><td>A planilha é disponibilizada para download</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="content-block">
+        <h2>⚠️ Pontos de Atenção</h2>
+        <div class="callout callout-warning"><span class="callout-icon">⚠️</span><span>Em alguns fluxos, o menu de geração só aparece <strong>após o PI ter sido Transmitido</strong> ao veículo. Se a opção não aparecer, verifique se o pedido já foi transmitido.</span></div>
+        <h3 style="margin-top:16px;">Modelos de PDF</h3>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Modelo</th><th>Indicado para</th></tr></thead>
+          <tbody>
+            <tr><td>Resumido</td><td>E-mail rápido ao cliente</td></tr>
+            <tr><td>Detalhado com inserções</td><td>Veículo ou operações</td></tr>
+            <tr><td>Sem valores</td><td>Cliente que não vê financeiro</td></tr>
+            <tr><td>Por programa</td><td>Grade agrupada por programa</td></tr>
+            <tr><td>Outros modelos</td><td>Configurados pela empresa</td></tr>
+          </tbody>
+        </table></div>
+        <p style="margin-top:12px;">Ver também: <a href="#" onclick="showPage('guia-email-pi'); return false;" style="color:var(--orange);">Enviar PI por E-mail →</a></p>
+      </div>
+    </div>
+
+    <!-- IMPORTAÇÃO DE TABELA DE PREÇOS -->
+    <div class="page-section content" id="page-guia-importacao-tabela-precos">
+      <div class="page-hero">
+        <div class="page-hero-tag">Portfólio & Preços</div>
+        <h1>Importação de Tabela de Preços</h1>
+        <p>Regras para carregar tabelas de preços via CSV ou Excel, com o tratamento correto da coluna FORMATOSIGLA.</p>
+      </div>
+
+      <div class="content-block">
+        <h2>📁 Modelos de Importação</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Modelo</th><th>Formato</th><th>Uso típico</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Linear CSV</strong></td><td>Arquivo .csv</td><td>Grade de rádio e TV aberta</td></tr>
+            <tr><td><strong>Digital CSV</strong></td><td>Arquivo .csv</td><td>Grade de mídia digital/online</td></tr>
+            <tr><td><strong>TDS/Excel2</strong></td><td>Planilha .xlsx</td><td>Exportação do sistema de tráfego</td></tr>
+          </tbody>
+        </table></div>
+        <p style="margin-top:8px; color:var(--text-muted); font-size:13px;">As regras de tratamento de sigla se aplicam igualmente aos três modelos.</p>
+      </div>
+
+      <div class="content-block">
+        <h2>📐 Regras da Coluna FORMATOSIGLA</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Situação</th><th>Comportamento</th><th>Resultado</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Sigla associada apenas a formatos <strong>inativos</strong></td>
+              <td>✅ Importação prossegue — <strong>não reativa</strong> o formato inativo</td>
+              <td>Novo registro criado com a sigla</td>
+            </tr>
+            <tr>
+              <td>Sigla com <strong>exatamente 1 formato ativo</strong></td>
+              <td>✅ Vínculo realizado normalmente</td>
+              <td>Formato ativo vinculado ao produto</td>
+            </tr>
+            <tr>
+              <td>FORMATOSIGLA <strong>vazia ou ausente</strong></td>
+              <td>❌ Linha rejeitada</td>
+              <td>Erro — preencher a sigla e reimportar</td>
+            </tr>
+            <tr>
+              <td><strong>2 ou mais formatos ativos</strong> com a mesma sigla</td>
+              <td>❌ Linha rejeitada — ambiguidade detectada</td>
+              <td>Erro — desativar os duplicados antes de importar</td>
+            </tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div class="content-block">
+        <h2>🔀 Fluxo de Decisão</h2>
+        <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:16px; font-family:monospace; font-size:13px; line-height:1.8; color:var(--text);">
+          Arquivo enviado<br>
+          &nbsp;&nbsp;↓<br>
+          FORMATOSIGLA preenchida?<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;Não → ❌ Linha rejeitada<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;Sim ↓<br>
+          &nbsp;&nbsp;Formatos <strong>ativos</strong> com essa sigla?<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;0 (só inativos) → ✅ Cria novo registro<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;1 → ✅ Vincula o formato ativo<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;2+ → ❌ Ambiguidade — linha rejeitada
+        </div>
+        <p style="margin-top:12px; font-size:13px; color:var(--text-muted);">A identificação usa sempre a combinação <strong>Veículo + Sigla</strong>, sem exceção por tipo de veículo ou cliente.</p>
+      </div>
+
+      <div class="content-block">
+        <h2>✅ Checklist Antes de Importar</h2>
+        <ul style="list-style:none; padding:0;">
+          <li style="padding:6px 0; border-bottom:1px solid var(--border);">☐ Arquivo no modelo correto (Linear CSV, Digital CSV ou TDS/Excel2)</li>
+          <li style="padding:6px 0; border-bottom:1px solid var(--border);">☐ Coluna <code>FORMATOSIGLA</code> preenchida em todas as linhas</li>
+          <li style="padding:6px 0; border-bottom:1px solid var(--border);">☐ Não há siglas duplicadas entre formatos <strong>ativos</strong> do mesmo veículo</li>
+          <li style="padding:6px 0; border-bottom:1px solid var(--border);">☐ Formatos inativos que devem ser vinculados foram reativados previamente no cadastro</li>
+          <li style="padding:6px 0;">☐ Arquivo sem células mescladas ou formatação que quebre o CSV</li>
+        </ul>
+      </div>
+
+      <div class="content-block">
+        <h2>⚠️ Pontos de Atenção</h2>
+        <div class="callout callout-warning">
+          <span class="callout-icon">⚠️</span>
+          <span>A importação pode ter <strong>sucesso parcial</strong> — algumas linhas são processadas e outras rejeitadas. Sempre revise o <strong>relatório de erros</strong> após a importação para tratar as linhas rejeitadas individualmente.</span>
+        </div>
+        <div class="callout callout-info" style="margin-top:12px;">
+          <span class="callout-icon">ℹ️</span>
+          <span>O sistema <strong>nunca reativa formatos inativos automaticamente</strong>. Se o formato inativo era o correto, reative-o manualmente no cadastro antes de reimportar.</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- #pages -->
+
+</main>
+
+<script>
+// ─── KNOWLEDGE BASE para busca ───────────────────────────────────────────────
+const KB = [
+  { id:'negocios', cat:'Adsim CRM', title:'Negócios — Tipos de Negociação', text:'Venda Pontual esporádica sem contratação. Contrato vigência mínima 3 meses valores fechados 100% garantidos. Um negócio por produto por operação.' },
+  { id:'campos', cat:'Adsim CRM', title:'Campos Obrigatórios do Negócio', text:'Tipo de Negociação, Organização, Agência condicional, Pessoa de Contato condicional, Produto usar Mídia Avulsa placeholder, Data Basket obrigatório, Valor obrigatório em negociação e fechamento, Etapa obrigatório.' },
+  { id:'atividades', cat:'Adsim CRM', title:'Atividades — Tipos e Campos', text:'Adicionar Atividade, Tomar Nota, Proposta, Enviar Arquivos. Campos obrigatórios: Organização, Tipo, Título, Data Horário, Observação. Todas as atividades precisam estar vinculadas a um negócio.' },
+  { id:'funil', cat:'Adsim CRM', title:'Funil de Vendas — 5 Etapas', text:'1 Prospecção Oportunidade. 2 Contato Agendado. 3 Em Negociação Mornos valor obrigatório proposta apresentada. 4 Proposta Apresentada Quentes valor produto obrigatórios. 5 Em Fechamento Contrato Fechado ganho. Dashboard basketado previsto em aberto quentes perdidos.' },
+  { id:'funil', cat:'Adsim CRM', title:'Boas Práticas do Funil', text:'Todo negócio ganho deve estar em fechamento antes de fechar. Data de Lançamento obrigatória. Um negócio por operação. Mídia Avulsa como placeholder.' },
+  { id:'midia-plus', cat:'Mídia+', title:'Mídia+ — Processo Sistêmico', text:'Propostas Negociação Pedidos de Compra Tratamento Exibições Checking Conciliação Faturamento. 300 relatórios pré-configurados. Operação OPEC Tráfego.' },
+  { id:'integracao', cat:'Integração', title:'SpotHub — Automação de PI por IA', text:'Agência envia PI por email PDF. SpotHub interpreta documento. PI criado automaticamente no Adsim. Sem mudar fluxo da agência. Mais governança de mídia.' },
+  { id:'integracao', cat:'Integração', title:'Integração Adsim Mídia+', text:'Código Externo CRM 879. Integrar pedidos apenas quando aprovados ligado padrão. Criar novas entidades no Mídia+. PI enviado após aprovação.' },
+  { id:'config-pi', cat:'Configurações', title:'Configurações do Pedido de Inserção', text:'Controla aprovação PI ligado. Bloqueia alterações após aprovação ligado. Permitir cancelar substituir pedidos digitais ligado. Aprovar PI quando descontos aprovados desligado. Enviar PI Mídia+ automático desligado.' },
+  { id:'config-proposta', cat:'Configurações', title:'Configurações da Proposta do Negócio', text:'Não permitir período inicial menor que hoje ligado. Bloqueio parcelas data menor mês vigente ligado. Controla aprovação proposta desligado. Gerar pedidos automaticamente desligado requer token admin.' },
+  { id:'fluxo', cat:'Processos', title:'Fluxo Comercial Completo', text:'Prospecção cadastrar oportunidade Mídia Avulsa placeholder. Proposta mover em negociação valor obrigatório. Aprovação proposta apresentada valor produto obrigatórios. Fechamento em fechamento ganho PI. Mídia+ operação programação. Checking previsto exibido. Faturamento.' },
+  { id:'onboarding', cat:'Implantação', title:'Processo de Onboarding — 10 Marcos', text:'M1 Kick Off M2 Ambiente M3 Carga Dados M4 Integrações M5 Validações M6 Treinamentos M7 Documentação M8 Testes M9 Go Live M10 Finalização. CSM CS Apoio Gerente Suporte. Movidesk Sense Data.' },
+  { id:'onboarding', cat:'Implantação', title:'Papéis do Onboarding', text:'CSM Customer Success Manager coordenação. Analista Implantação CS execução técnica treinamentos. Sponsor cliente decisões estratégicas. Responsável Técnico validações TI. Gerente Projeto coordenação interna.' },
+  { id:'home', cat:'Geral', title:'Plataforma ADS — TDSOFT', text:'Adsim CRM comercial vendas publicidade. Mídia+ operação gestão mídia tráfego OPEC. AdChecking fiscalização exibições. AdDigital mídia digital. SpotHub automação PI IA. AdReport relatórios. AdSales eMídia. 20 anos mercado mídia.' },
+  // Guias passo a passo
+  { id:'guia-negocio', cat:'Guia', title:'Criar Negócio e Atividade — Passo a Passo', text:'Pipeline de Negócios botão NOVO. Formulário Adicionar negócio tipo negociação origem organização título agência pessoa contato período veiculação. Produto Mídia Avulsa placeholder. Etapas prospecção contato proposta negociação contrato fechado. Salvar ir para o negócio. Adicionar atividade visita reunião ligação email título data hora salvar.' },
+  { id:'guia-negocio', cat:'Guia', title:'Tela Editar Negócio', text:'Depois de salvo abre tela Editar Negócio. Dados organização pessoas envolvidas tags proposta ativa histórico. Atividades em aberto. Adicionar atividade propostas envio arquivos.' },
+  { id:'guia-aprovar-pi', cat:'Guia', title:'Aprovar Pedido de Inserção — Em Lote', text:'Mídia Meus Pedidos. Marcar pedidos aprovar vários. Ícone aprovar polegar. Aguardar processamento. Resultado item a item PI anunciante agência veículo praça período status resposta. Aprovar Todos.' },
+  { id:'guia-aprovar-pi', cat:'Guia', title:'Aprovar Pedido de Inserção — Individual', text:'Abrir pedido editar lápis número pedido. Botão Aprovar topo tela. Confirmar Sim aprovar. Aprovado com sucesso ícone verde data hora. Botão Aprovar vira Remover Aprovação. Aprovar trava edição. Filtros aprovados não aprovados reprovados.' },
+  { id:'guia-aprovar-pi', cat:'Guia', title:'Mensagens de Aprovação do PI', text:'Você deseja aprovar o pedido? Sim aprovar. Estamos processando. Todos os itens aprovados com sucesso. Confira a lista pois ocorreu problema. Aprovado com sucesso. Falha parcial lote verificar coluna resposta.' },
+  { id:'guia-temperatura', cat:'Guia', title:'Temperatura das Etapas da Pipeline', text:'Classificar etapas funil nível interesse potencial conversão. Frio Morno Quente. Vendas Gerenciar Pipeline editar aba etapas selecionar etapa editar temperatura salvar. Temperatura é da etapa não do negócio. Todos negócios herdam temperatura da etapa. Não bloqueia avanço. Máximo dias permitir dar ganho mesma janela.' },
+  { id:'guia-metas', cat:'Guia', title:'Metas de Vendas — Criação e Configuração', text:'Meta de Vendas cadastro criação. Nome usuário menu perfil. Edição Meta de Venda dois painéis. Descrição obrigatório. Empresa Exibição Executivo recomendado. Veículo Pipeline Etapa Produto Tipo Atividade opcionais. Utilizar valor líquido basket toggles. Definir Período início até valor aplicar. Distribuição automática mensal. Lixeira remover mês. Adicionar intervalo. Limpar. Salvar sucesso. Dashboard Meta x Basket.' },
+  { id:'guia-agrupadores', cat:'Guia', title:'Agrupadores de Linha — Portfólio de Produtos', text:'Agrupadores de linha criar editar associar entregas. Portfólio Produtos Editar Entrega mais opções Gerenciar Agrupadores. Legenda nome descrição cor status ativo. Adicionar confirmar. Editar status toggle ativo inativo. Fechar. Configurar agrupador na entrega selecionar tipo exclusivo compartilhado personalizado. Confirmar salvar. Visualizar por grupos aba. Grupo de linha organização programação.' },
+  { id:'guia-criar-produto', cat:'Guia', title:'Criar Produto no Portfólio de Produtos', text:'Criar novo produto Ofertas Produtos Novo. Dados Gerais título tipo tags. Segmentação público-alvo segmento opcional. Criar produto confirmar salvar. Portfólio produtos disponível vincular negócios propostas pedido inserção PI. Tags busca categorização. Padrão título descritivo veículo formato período.' },
+  { id:'config-sistema', cat:'Configurações', title:'Configurações do Sistema Adsim', text:'Backoffice configuração empresa. Impressão PI logomarca observação URL aceite. Gerenciamento usuários CPF obrigatório. Integração Mídia+ código externo entidades criar alterar. Comportamento PI controla aprovação bloqueia alteração aprovar descontos envio automático comprovante inserções fora período CNPJ obrigatório. Comportamento Proposta gerar automaticamente aprovação bloquear. Comportamento Negócio análise crédito carteira segmentos pipeline ganho. Cadastro CNPJ CPF duplicado. Empresa carteira descontos limite usuários. Produto bloquear nome. Idioma país timezone. Vendas valores líquidos pipeline padrão. Planejamento aprovação todos. Keycloak SSO realm client.' },
+  // Novos guias operacionais
+  { id:'guia-incluir-cliente', cat:'Guia', title:'Vincular / Trocar / Desvincular Organização no Negócio', text:'Incluir trocar desvincular organização cliente anunciante negócio CRM. Abrir negócio editar campo organização selecionar pesquisar remover X salvar. Carteira cliente configuração bloquear. Impacto propostas pedidos troca anunciante.' },
+  { id:'guia-etapas-pipeline', cat:'Guia', title:'Adicionar e Configurar Etapas na Pipeline', text:'Adicionar etapa pipeline funil vendas. Backoffice pipelines selecionar adicionar etapa título temperatura máximo dias permitir ganho salvar. Etapa sem nome erro obrigatório. Temperatura fria morna quente. Máximo dias alerta vencimento. Permitir ganho fechar negócio etapa.' },
+  { id:'guia-materiais-pi', cat:'Guia', title:'Adicionar Materiais (Criativos) ao Pedido de Inserção', text:'Material peça criativa spot vídeo banner PI pedido inserção. Seção materiais adicionar material peça obrigatório título obrigatório duração 30 45 60 segundos upload GOdrive salvar. Material diferente de anexo. Peça tipo formato.' },
+  { id:'guia-periodo-pi', cat:'Guia', title:'Alterar Período de Veiculação do PI', text:'Alterar datas início fim veiculação pedido inserção PI. Abrir editar data início data fim novo período valor divergente aviso remover inserções fora período salvar. Bloqueia alterações após aprovação remover aprovação editar.' },
+  { id:'guia-anexar-pi', cat:'Guia', title:'Anexar Arquivos Administrativos ao PI', text:'Anexar arquivo documento PI pedido inserção. Seção anexos área upload arrastar enviar confirmar. Anexo diferente de material. Contrato autorização briefing comprovante. Copiar anexos proposta para pedidos configuração.' },
+  { id:'guia-copiar-pi', cat:'Guia', title:'Copiar (Duplicar) Pedido de Inserção', text:'Copiar duplicar PI pedido inserção. Listagem menu ações copiar janela praça destino manter valores copiar programação copiar anexos copiar materiais confirmar. Novo PI número diferente status em aberto. Sem aprovação cópia.' },
+  { id:'guia-criar-pipeline', cat:'Guia', title:'Criar Pipeline (Funil de Vendas)', text:'Criar pipeline funil vendas Adsim CRM. Backoffice pipelines nova pipeline título início fim observações salvar. Nasce sem etapas adicionar etapas depois. Pipeline padrão empresa configuração. Vigência datas ativa.' },
+  { id:'guia-criar-pi', cat:'Guia', title:'Criar Pedido de Inserção do Zero', text:'Criar novo PI pedido inserção. Mídia meus pedidos novo pedido tipo veículo 01 13 rádio TV digital OOH selecionar veículo praça continuar. Anunciante agência faturamento pagamento natureza período veiculação salvar. Obrigar negócio análise crédito bloquear configuração.' },
+  { id:'guia-pendencia-pi', cat:'Guia', title:'Editar e Concluir Pendência do PI', text:'Pendência PI pedido inserção aberto. Seção pendências visualizar detalhe editar remover pendência concluir resolver histórico. Remover pendência equivale concluir não excluir. Pendência bloqueia aprovação transmissão.' },
+  { id:'guia-email-pi', cat:'Guia', title:'Enviar PI por E-mail para Aprovação do Cliente', text:'Enviar pedido inserção PI e-mail cliente anunciante agência aprovação. Menu ações enviar por email solicitar aprovação autenticidade mostrar desconto comissão valor líquido mensagem personalizada enviar confirmar. Destinatário cadastro. URL termo aceite configuração.' },
+  { id:'guia-excluir-pi', cat:'Guia', title:'Excluir Pedido de Inserção', text:'Excluir PI pedido inserção. Listagem marcar pedidos ícone excluir confirmar sim excluir. Individual menu ações excluir confirmar. Exclusão irreversível permanente. Pedido aprovado integrado bloqueia exclusão remover aprovação antes. Cancelar alternativa mantém histórico.' },
+  { id:'guia-negocio-pi', cat:'Guia', title:'Gerar Negócio CRM a Partir do PI', text:'Gerar negócio CRM partir pedido inserção PI fluxo inverso. Abrir PI menu ações gerar negócio formulário pipeline obrigatório etapa obrigatório dados pré-preenchidos confirmar. Lote marcar PIs gerar negócio pipeline etapa todos. Fluxo inverso PI para CRM.' },
+  { id:'guia-pdf-excel-pi', cat:'Guia', title:'Gerar PDF e Excel do Pedido de Inserção', text:'Gerar PDF Excel pedido inserção mapa mídia. Menu ações gerar PDF 10 modelos resumido detalhado sem valores por programa selecionar modelo baixar. Excel gerar exportar planilha download. Menu aparece após transmitir PI. Comprovante digital configuração.' },
+  { id:'guia-importacao-tabela-precos', cat:'Portfólio', title:'Importação de Tabela de Preços', text:'Importar tabela preços Adsim CSV Excel. Modelos Linear CSV Digital CSV TDS Excel2. FORMATOSIGLA obrigatória vazia bloqueia linha. Sigla inativa cria novo registro não reativa. Duas siglas ativas ambiguidade bloqueia linha. Identificação veículo sigla. Checklist antes importar siglas duplicadas formatos ativos inativos relatório erros.' },
+];
+
+// ─── NAVEGAÇÃO ────────────────────────────────────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  const page = document.getElementById('page-' + id);
+  if (page) page.classList.add('active');
+
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + id + "'")) {
+      n.classList.add('active');
+    }
+  });
+
+  document.getElementById('searchResults').classList.remove('active');
+  document.getElementById('pages').style.display = '';
+
+  const labels = {
+    home:'Visão Geral', negocios:'Negócios', campos:'Campos', atividades:'Atividades',
+    funil:'Funil de Vendas', 'midia-plus':'Mídia+', integracao:'Integração',
+    'config-pi':'Config. PI', 'config-proposta':'Config. Proposta',
+    fluxo:'Fluxo Comercial', onboarding:'Onboarding',
+    'guia-negocio':'Criar Negócio e Atividade',
+    'guia-aprovar-pi':'Aprovar Pedido de Inserção',
+    'guia-temperatura':'Temperatura do Pipeline',
+    'guia-metas':'Metas de Vendas',
+    'guia-agrupadores':'Agrupadores de Linha',
+    'guia-criar-produto':'Criar Produto no Portfólio',
+    'config-sistema':'Configurações do Sistema',
+    'guia-incluir-cliente':'Vincular Cliente ao Negócio',
+    'guia-etapas-pipeline':'Adicionar Etapas à Pipeline',
+    'guia-materiais-pi':'Materiais no PI',
+    'guia-periodo-pi':'Alterar Período de Veiculação',
+    'guia-anexar-pi':'Anexar Arquivos ao PI',
+    'guia-copiar-pi':'Copiar PI',
+    'guia-criar-pipeline':'Criar Pipeline',
+    'guia-criar-pi':'Criar Pedido de Inserção',
+    'guia-pendencia-pi':'Pendências do PI',
+    'guia-email-pi':'Enviar PI por E-mail',
+    'guia-excluir-pi':'Excluir PI',
+    'guia-negocio-pi':'Gerar Negócio a partir do PI',
+    'guia-pdf-excel-pi':'Gerar PDF e Excel do PI',
+    'guia-importacao-tabela-precos':'Importação de Tabela de Preços'
+  };
+
+  document.getElementById('breadcrumb').innerHTML =
+    'Wiki <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg> <span>' + (labels[id] || id) + '</span>';
+
+  window.scrollTo(0, 0);
+}
+
+// ─── BUSCA ────────────────────────────────────────────────────────────────────
+function handleSearch(q) {
+  document.getElementById('mainSearch').value = q;
+  document.getElementById('sideSearch').value = q;
+
+  if (!q.trim()) {
+    document.getElementById('searchResults').classList.remove('active');
+    document.getElementById('pages').style.display = '';
+    return;
+  }
+
+  const terms = q.toLowerCase().split(' ').filter(t => t.length > 1);
+  const results = KB.filter(item => {
+    const hay = (item.title + ' ' + item.text + ' ' + item.cat).toLowerCase();
+    return terms.every(t => hay.includes(t));
+  });
+
+  document.getElementById('pages').style.display = 'none';
+  document.getElementById('searchResults').classList.add('active');
+  document.getElementById('searchCount').textContent =
+    results.length === 0 ? 'Nenhum resultado encontrado para "' + q + '"' :
+    results.length + ' resultado(s) para "' + q + '"';
+
+  const list = document.getElementById('searchList');
+  list.innerHTML = results.map(r => {
+    const snippet = r.text.length > 140 ? r.text.substring(0, 140) + '…' : r.text;
+    const highlighted = highlight(r.title + ' — ' + snippet, terms);
+    return `<div class="search-result-item" onclick="showPage('${r.id}')">
+      <div class="result-category">${r.cat}</div>
+      <div class="result-title">${highlight(r.title, terms)}</div>
+      <div class="result-snippet">${highlight(snippet, terms)}</div>
+    </div>`;
+  }).join('');
+}
+
+function highlight(text, terms) {
+  let result = text;
+  terms.forEach(t => {
+    const re = new RegExp('(' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    result = result.replace(re, '<mark>$1</mark>');
+  });
+  return result;
+}
+</script>
+</body>
+</html>

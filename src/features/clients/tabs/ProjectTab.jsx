@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
   User, LayoutGrid, Users, Calendar, Link2,
   Star, AlertTriangle, Phone, Plus, Pencil, Trash2, Check,
@@ -19,7 +19,7 @@ import ContactPopover from '../components/ContactPopover'
 // ─── ProjectTab ───────────────────────────────────────────────────────────────
 
 export default function ProjectTab({ client, project }) {
-  const { toast } = useToast()
+  const toast = useToast()
 
   // ── Estado do formulário ──
   const [cForm, setCForm] = useState({ ...client })
@@ -30,9 +30,28 @@ export default function ProjectTab({ client, project }) {
   const scev = (field) => (e) => sc(field)(e.target.value)
   const spev = (field) => (e) => sp(field)(e.target.value)
 
-  // dirty check
-  const clientDirty  = JSON.stringify(cForm) !== JSON.stringify(client)
-  const projectDirty = JSON.stringify(pForm) !== JSON.stringify(project)
+  // ── dbStrRef pattern: rastreia o JSON salvo no banco sem causar re-renders ──
+  const cDbStrRef = useRef(null)
+  const pDbStrRef = useRef(null)
+
+  useEffect(() => {
+    const str = JSON.stringify(client)
+    if (str !== cDbStrRef.current) {
+      cDbStrRef.current = str
+      setCForm(JSON.parse(str))
+    }
+  }, [client])
+
+  useEffect(() => {
+    const str = JSON.stringify(project)
+    if (str !== pDbStrRef.current) {
+      pDbStrRef.current = str
+      setPForm(JSON.parse(str))
+    }
+  }, [project])
+
+  const clientDirty  = cDbStrRef.current !== null && JSON.stringify(cForm) !== cDbStrRef.current
+  const projectDirty = pDbStrRef.current !== null && JSON.stringify(pForm) !== pDbStrRef.current
   const dirty = clientDirty || projectDirty
 
   // ── Mutations ──
@@ -43,15 +62,15 @@ export default function ProjectTab({ client, project }) {
     try {
       if (clientDirty)  await updateClient.mutateAsync({ id: client.id, ...cForm })
       if (projectDirty) await updateProject.mutateAsync({ id: project.id, ...pForm })
-      toast({ type: 'success', message: 'Alterações salvas com sucesso!' })
+      toast({ title: 'Alterações salvas!', description: 'Dados do cliente e projeto atualizados.', variant: 'success' })
     } catch {
-      toast({ type: 'error', message: 'Erro ao salvar. Tente novamente.' })
+      toast({ title: 'Erro ao salvar', description: 'Tente novamente.', variant: 'error' })
     }
   }
 
   function handleCancel() {
-    setCForm({ ...client })
-    setPForm({ ...project })
+    if (cDbStrRef.current) setCForm(JSON.parse(cDbStrRef.current))
+    if (pDbStrRef.current) setPForm(JSON.parse(pDbStrRef.current))
   }
 
   // ── Dados auxiliares ──
@@ -307,7 +326,7 @@ export default function ProjectTab({ client, project }) {
             ? 'Nenhum contato cadastrado'
             : `${contacts.length} contato${contacts.length > 1 ? 's' : ''} cadastrado${contacts.length > 1 ? 's' : ''}${sponsors.length > 0 ? ` · ${sponsors.length} sponsor` : ''}`
         }
-        complete={isContactsComp ? true : false}
+        complete={isContactsComp}
       >
         {contacts.length > 0 && (
           <div className="space-y-2 mb-3">
